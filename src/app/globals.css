@@ -167,6 +167,67 @@ img {
   transform: scaleX(1);
 }
 
+.nav-toggle,
+.mobile-nav-backdrop,
+.mobile-nav-panel {
+  display: none;
+}
+
+.nav-toggle {
+  position: relative;
+  z-index: 103;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.mobile-nav-panel {
+  position: fixed;
+  top: 72px;
+  right: 20px;
+  z-index: 102;
+  width: min(280px, calc(100vw - 40px));
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(8, 10, 16, 0.94);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(22px) saturate(1.15);
+}
+
+.mobile-nav-panel a {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 6px;
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.mobile-nav-panel a:hover,
+.mobile-nav-panel a.is-active {
+  background: rgba(210, 140, 0, 0.08);
+  color: var(--fg);
+}
+
 .hero {
   position: relative;
   display: flex;
@@ -4879,6 +4940,25 @@ img {
 
   .nav-links {
     display: none;
+  }
+
+  .nav-toggle {
+    display: grid;
+  }
+
+  .mobile-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 101;
+    display: block;
+    border: 0;
+    background: transparent;
+    cursor: default;
+  }
+
+  .mobile-nav-panel.is-open {
+    display: grid;
+    gap: 2px;
   }
 
   .page {

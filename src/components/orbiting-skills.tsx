@@ -273,6 +273,7 @@ SkillNode.displayName = "SkillNode";
 export function OrbitingSkills() {
   const [time, setTime] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [orbitScale, setOrbitScale] = useState(1);
 
   useEffect(() => {
     if (paused) return;
@@ -287,13 +288,38 @@ export function OrbitingSkills() {
     return () => cancelAnimationFrame(id);
   }, [paused]);
 
+  useEffect(() => {
+    const updateOrbitScale = () => {
+      const availableWidth = Math.max(0, window.innerWidth - 64);
+      setOrbitScale(Math.min(480, availableWidth) / 480);
+    };
+
+    updateOrbitScale();
+    window.addEventListener("resize", updateOrbitScale);
+
+    return () => window.removeEventListener("resize", updateOrbitScale);
+  }, []);
+
   return (
     <div
       style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onTouchStart={() => setPaused(true)}
+      onTouchEnd={() => setPaused(false)}
     >
-      <div style={{ position: "relative", width: "480px", height: "480px", flexShrink: 0 }}>
+      <div style={{ position: "relative", width: "min(480px, calc(100vw - 64px))", aspectRatio: "1 / 1" }}>
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            width: "480px",
+            height: "480px",
+            transform: `translate(-50%, -50%) scale(${orbitScale})`,
+            transformOrigin: "center",
+          }}
+        >
 
         {particles.map((p) => (
           <div
@@ -365,6 +391,7 @@ export function OrbitingSkills() {
             angle={time * config.speed + config.phaseShift}
           />
         ))}
+        </div>
       </div>
     </div>
   );

@@ -73,6 +73,13 @@ const typedPhrases = [
 ];
 
 const sectionIds = ["hero", "about", "work", "publications", "experience"];
+const navItems = [
+  ["hero", "Home"],
+  ["work", "Work"],
+  ["publications", "Research"],
+  ["experience", "Experience"],
+  ["about", "About"],
+] as const;
 
 const highlights: Highlight[] = [
   {
@@ -2677,23 +2684,34 @@ function CallToAction() {
 
 export function PortfolioPage() {
   const activeSection = useActiveSection(sectionIds);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const totalCitations = publications.reduce((sum, pub) => sum + (pub.citations ?? 0), 0);
+
+  useEffect(() => {
+    if (!isMobileNavOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMobileNavOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMobileNavOpen]);
+
+  const closeMobileNav = () => setIsMobileNavOpen(false);
 
   return (
     <>
       <nav className="nav">
-        <a href="#hero" className="nav-logo">
+        <a href="#hero" className="nav-logo" onClick={closeMobileNav}>
           sra.engineer
         </a>
         <ul className="nav-links">
-          {[
-            ["hero", "Home"],
-            ["work", "Work"],
-            ["publications", "Research"],
-            ["experience", "Experience"],
-            ["about", "About"],
-          ].map(([id, label]) => (
+          {navItems.map(([id, label]) => (
             <li key={id}>
               <a href={`#${id}`} className={activeSection === id ? "is-active" : ""}>
                 {label}
@@ -2704,6 +2722,29 @@ export function PortfolioPage() {
             <a href="mailto:raqueed@outlook.com">Contact</a>
           </li>
         </ul>
+        <button
+          type="button"
+          className="nav-toggle"
+          aria-label={isMobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-controls="mobile-navigation"
+          aria-expanded={isMobileNavOpen}
+          onClick={() => setIsMobileNavOpen((value) => !value)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+        {isMobileNavOpen ? <button type="button" className="mobile-nav-backdrop" aria-label="Close navigation menu" onClick={closeMobileNav} /> : null}
+        <div id="mobile-navigation" className={`mobile-nav-panel${isMobileNavOpen ? " is-open" : ""}`}>
+          {navItems.map(([id, label]) => (
+            <a key={id} href={`#${id}`} className={activeSection === id ? "is-active" : ""} onClick={closeMobileNav}>
+              {label}
+            </a>
+          ))}
+          <a href="mailto:raqueed@outlook.com" onClick={closeMobileNav}>
+            Contact
+          </a>
+        </div>
       </nav>
 
       <main>
