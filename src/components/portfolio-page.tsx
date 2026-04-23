@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { BGPattern } from "@/components/ui/bg-pattern";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { GlowCard } from "@/components/ui/spotlight-card";
@@ -10,6 +11,7 @@ type Highlight = {
   title: string;
   blurb: string;
   image: string;
+  featured?: "dma-uart" | "test-framework" | "memory-map" | "ble-scan" | "iot-logger";
 };
 
 type TechCardData = {
@@ -72,39 +74,44 @@ const sectionIds = ["hero", "about", "work", "publications", "experience"];
 
 const highlights: Highlight[] = [
   {
-    title: "BSP & Driver Development",
+    title: "IoT Data Logger",
     blurb:
-      "Built complete Board Support Packages from the ground up for STM32 and Silicon Labs — UART, SPI, I2C, CAN, ADC drivers, DMA controllers, clock trees, PLL configuration, and HAL layers.",
+      "End-to-end BLE, local buffering, cellular upload, and AWS ingestion architecture for resilient device-to-cloud data delivery.",
     image:
       "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF1714",
+    featured: "iot-logger",
   },
   {
-    title: "Connected Tools Platform",
+    title: "DMA-Based UART Passthrough System",
     blurb:
-      "Fleet-aware firmware plus secure device-to-cloud patterns across BLE, Cellular, Wi-Fi, MQTT, and HTTPS.",
+      "STM32 WBA55 firmware bridging BLE and cellular modules with DMA-backed, bidirectional UART transfer.",
     image:
       "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF5843",
+    featured: "dma-uart",
   },
   {
-    title: "HIL & Validation",
+    title: "Automated Test Framework",
     blurb:
-      "PyTest, Jenkins, and HIL rigs to scale regression around GNSS, power behavior, and OTA reliability.",
+      "PyTest and Jenkins test infrastructure for BLE, cellular, and hardware-integrated embedded validation.",
     image:
       "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Tennessee/DSCF4775",
+    featured: "test-framework",
   },
   {
-    title: "Power Domain Management",
+    title: "BLE Scan-Only Mode & Stack Integration",
     blurb:
-      "Peripheral power-on/off sequences, sleep/deep sleep/standby transitions, clock gating, and wake-up interrupt handlers — measurably reducing active and standby current consumption.",
+      "Scan-only BLE firmware mode for STM32 WBA55 with advertisement parsing, selective filtering, and stack-aware integration.",
     image:
       "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF3797",
+    featured: "ble-scan",
   },
   {
-    title: "Field Telemetry",
+    title: "Memory Map Intelligence Platform",
     blurb:
-      "Signed URLs, structured logs, and Athena queries to observe device behavior in the field.",
+      "Large-scale firmware data tooling for normalizing, comparing, clustering, and reporting on 55,000 memory map variables across engineering tools.",
     image:
       "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF5843",
+    featured: "memory-map",
   },
 ];
 
@@ -791,16 +798,1224 @@ function Hero({ totalCitations }: { totalCitations: number }) {
   );
 }
 
+const dmaProject = {
+  category: "Embedded Systems / Real-Time Firmware / STM32",
+  summary:
+    "Designed and implemented a high-performance UART passthrough system on the STM32 WBA55, bridging BLE and cellular modules with reliable, low-latency, bidirectional transfer in a real embedded environment.",
+  contributions: [
+    "Implemented DMA-based UART communication using GPDMA linked-list circular mode to reduce CPU overhead.",
+    "Designed a buffered message pipeline with newline-based framing for complete packet handling.",
+    "Built bidirectional UART passthrough between two independent peripherals.",
+    "Integrated cellular power control logic using PWRKEY sequencing.",
+    "Added activity-based forwarding so passthrough only engages when valid UART traffic is detected.",
+  ],
+  impact: [
+    "Enables non-blocking, low-latency communication.",
+    "Demonstrates depth across DMA, UART, interrupts, and hardware control.",
+    "Supports reliable BLE / MCU / cellular bridging in a real embedded system.",
+  ],
+  focus: [
+    "Minimizing CPU load while keeping transfers responsive.",
+    "Preserving complete message boundaries.",
+    "Coordinating hardware control and communication flow.",
+    "Handling two UART directions cleanly and predictably.",
+  ],
+  tech: ["STM32 WBA55", "UART", "DMA / GPDMA", "Embedded C/C++", "Real-Time Firmware", "Cellular Control Logic"],
+};
+
+function DmaUartDiagram() {
+  const shouldReduceMotion = useReducedMotion();
+  const packetTransition = (duration: number, delay = 0) => ({
+    duration,
+    delay,
+    repeat: shouldReduceMotion ? 0 : Infinity,
+    ease: "linear" as const,
+  });
+
+  return (
+    <div className="dma-diagram" aria-label="BLE module to STM32 MCU to cellular module DMA UART passthrough diagram">
+      <div className="dma-grid" />
+      <div className="dma-node dma-node-ble">
+        <span className="dma-node-kicker">UART A</span>
+        <strong>BLE Module</strong>
+        <small>RX / TX stream</small>
+      </div>
+      <div className="dma-node dma-node-mcu">
+        <div className="dma-ring" />
+        <span className="dma-node-kicker">STM32 WBA55</span>
+        <strong>MCU Bridge</strong>
+        <div className="dma-mcu-tags">
+          <span>UART</span>
+          <span>DMA</span>
+          <span>Buffer</span>
+          <span>Control</span>
+        </div>
+        <div className="dma-buffer" aria-label="newline framed packet buffer">
+          {[0, 1, 2, 3].map((item) => (
+            <motion.span
+              key={item}
+              animate={shouldReduceMotion ? undefined : { opacity: [0.35, 1, 0.45], y: [0, -2, 0] }}
+              transition={{ duration: 1.8, delay: item * 0.18, repeat: Infinity, ease: "easeInOut" }}
+            />
+          ))}
+          <em>\n</em>
+        </div>
+      </div>
+      <div className="dma-node dma-node-cellular">
+        <span className="dma-node-kicker">UART B</span>
+        <strong>Cellular Module</strong>
+        <small>AT / data path</small>
+        <div className="dma-power">
+          <span className="dma-power-pulse" />
+          <span>PWRKEY ready</span>
+        </div>
+      </div>
+
+      <div className="dma-lane dma-lane-left" aria-hidden="true">
+        <motion.span
+          className="dma-packet"
+          animate={shouldReduceMotion ? undefined : { top: ["4%", "88%"], opacity: [0, 1, 1, 0] }}
+          transition={packetTransition(2.35, 0.1)}
+        />
+        <motion.span
+          className="dma-packet dma-packet-reverse"
+          animate={shouldReduceMotion ? undefined : { top: ["88%", "6%"], opacity: [0, 0.9, 0.9, 0] }}
+          transition={packetTransition(3.4, 1.15)}
+        />
+      </div>
+      <div className="dma-lane dma-lane-right" aria-hidden="true">
+        <motion.span
+          className="dma-packet"
+          animate={shouldReduceMotion ? undefined : { top: ["5%", "90%"], opacity: [0, 1, 1, 0] }}
+          transition={packetTransition(2.65, 0.65)}
+        />
+        <motion.span
+          className="dma-packet dma-packet-reverse"
+          animate={shouldReduceMotion ? undefined : { top: ["90%", "8%"], opacity: [0, 0.82, 0.82, 0] }}
+          transition={packetTransition(4.1, 2.05)}
+        />
+      </div>
+      <div className="dma-activity-lane dma-activity-top" aria-hidden="true" />
+      <div className="dma-activity-lane dma-activity-bottom" aria-hidden="true" />
+      <div className="dma-status-strip">
+        <span>activity detect</span>
+        <strong>DMA circular linked-list active</strong>
+      </div>
+    </div>
+  );
+}
+
+function DmaProjectHighlight() {
+  const shouldReduceMotion = useReducedMotion();
+  const childMotion = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 14 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, amount: 0.2 },
+      };
+
+  return (
+    <motion.article
+      className="carousel-main dma-feature-card"
+      initial={shouldReduceMotion ? undefined : { opacity: 0, y: 18 }}
+      whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: 0.58, ease: "easeOut" }}
+    >
+      <div className="dma-feature-copy">
+        <motion.div {...childMotion} transition={{ duration: 0.42 }}>
+          <span className="dma-eyebrow">Featured embedded project</span>
+          <h3>DMA-Based UART Passthrough System</h3>
+          <p className="dma-category">{dmaProject.category}</p>
+          <p className="dma-summary">{dmaProject.summary}</p>
+        </motion.div>
+
+        <motion.div className="dma-content-grid" {...childMotion} transition={{ duration: 0.42, delay: 0.08 }}>
+          <section className="dma-copy-block">
+            <h4>Key Contributions</h4>
+            <ul className="dma-check-list">
+              {dmaProject.contributions.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+          <section className="dma-copy-block dma-impact-block">
+            <h4>Impact</h4>
+            <ul className="dma-impact-list">
+              {dmaProject.impact.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        </motion.div>
+
+        <motion.section className="dma-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
+          <h4>Engineering Focus</h4>
+          <div className="dma-focus-grid">
+            {dmaProject.focus.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.div className="tag-row dma-tech-row" {...childMotion} transition={{ duration: 0.42, delay: 0.24 }}>
+          {dmaProject.tech.map((tag) => (
+            <span key={tag} className="tag">
+              {tag}
+            </span>
+          ))}
+        </motion.div>
+      </div>
+      <motion.div
+        className="dma-feature-visual"
+        initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
+        whileInView={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.58, delay: 0.16, ease: "easeOut" }}
+      >
+        <DmaUartDiagram />
+      </motion.div>
+    </motion.article>
+  );
+}
+
+const testFrameworkProject = {
+  category: "Test Infrastructure • CI/CD • Embedded Validation",
+  summary:
+    "Designed and implemented a hardware-integrated automated test framework using Python and Jenkins to validate BLE modules, cellular modules, and embedded systems through scalable, repeatable test workflows.",
+  contributions: [
+    "Built PyTest-based automated suites for BLE communication validation.",
+    "Developed cellular connectivity and AT command validation flows.",
+    "Integrated tests into a Jenkins CI pipeline for continuous firmware validation.",
+    "Connected workflows to real hardware through FTDI UART and SWD flashing/debug paths.",
+    "Added signal-level validation with logic analyzer traces.",
+    "Implemented structured logging, reporting, and failure diagnostics.",
+  ],
+  impact: [
+    "Enabled scalable regression testing for embedded systems.",
+    "Improved firmware reliability through automated validation pipelines.",
+    "Reduced debugging time with structured logs and reproducible test flows.",
+    "Introduced CI/CD practices into hardware and firmware workflows.",
+  ],
+  focus: [
+    "Coordinating software tests with real hardware states.",
+    "Synchronizing flashing, communication, and validation.",
+    "Handling flaky hardware scenarios in automation.",
+    "Designing reproducible and debuggable test flows.",
+  ],
+  tech: [
+    "Python",
+    "PyTest",
+    "Jenkins",
+    "UART / FTDI",
+    "SWD",
+    "Embedded Systems",
+    "Test Automation",
+    "Hardware Validation",
+  ],
+};
+
+function TestPipelineVisualization() {
+  const shouldReduceMotion = useReducedMotion();
+  const pipelineStages = ["Code", "Jenkins", "Runner", "Hardware", "Results"];
+  const resultRows = ["BLE link", "AT cmd", "UART rx", "SWD flash"];
+  const packetTransition = (duration: number, delay = 0) => ({
+    duration,
+    delay,
+    repeat: shouldReduceMotion ? 0 : Infinity,
+    ease: "linear" as const,
+  });
+
+  return (
+    <div className="test-framework-visual" aria-label="Developer to Jenkins to test runner to hardware to results pipeline diagram">
+      <div className="test-framework-grid" />
+      <div className="test-framework-pipeline" aria-hidden="true">
+        <div className="test-framework-pipeline-line" />
+        {[0, 1, 2].map((packet) => (
+          <motion.span
+            key={packet}
+            className="test-framework-packet"
+            animate={shouldReduceMotion ? undefined : { left: ["2%", "98%"], opacity: [0, 1, 1, 0] }}
+            transition={packetTransition(4.8, packet * 0.9)}
+          />
+        ))}
+      </div>
+
+      <div className="test-framework-stage-row">
+        {pipelineStages.map((stage, index) => (
+          <motion.div
+            key={stage}
+            className={`test-framework-stage test-framework-stage-${index + 1}`}
+            animate={shouldReduceMotion ? undefined : { borderColor: ["rgba(255,255,255,0.09)", "rgba(210,140,0,0.32)", "rgba(255,255,255,0.09)"] }}
+            transition={{ duration: 4.8, delay: index * 0.34, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <span className="test-framework-stage-label">stage 0{index + 1}</span>
+            <strong>{stage}</strong>
+            <small>
+              {index === 0
+                ? "test scripts"
+                : index === 1
+                  ? "orchestrate"
+                  : index === 2
+                    ? "execute"
+                    : index === 3
+                      ? "UART + SWD"
+                      : "report"}
+            </small>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="test-framework-mid-row">
+        <div className="test-framework-runner">
+          <span className="test-framework-stage-label">test cycles</span>
+          <div className="test-framework-cycle-ring">
+            {[0, 1, 2].map((pulse) => (
+              <motion.span
+                key={pulse}
+                animate={shouldReduceMotion ? undefined : { scale: [0.72, 1.16, 0.72], opacity: [0.38, 1, 0.42] }}
+                transition={{ duration: 1.9, delay: pulse * 0.28, repeat: Infinity, ease: "easeInOut" }}
+              />
+            ))}
+          </div>
+          <strong>pytest -m hil</strong>
+        </div>
+
+        <div className="test-framework-hardware">
+          <span className="test-framework-stage-label">hardware interface</span>
+          <div className="test-framework-board">
+            <div className="test-framework-chip">
+              <span>MCU</span>
+            </div>
+            <div className="test-framework-pins test-framework-pins-left" />
+            <div className="test-framework-pins test-framework-pins-right" />
+            <motion.div
+              className="test-framework-swd-bar"
+              animate={shouldReduceMotion ? undefined : { scaleX: [0.08, 1, 1, 0.08], opacity: [0.45, 1, 0.72, 0.45] }}
+              transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </div>
+          <div className="test-framework-uart-lines" aria-hidden="true">
+            {[0, 1, 2].map((line) => (
+              <motion.span
+                key={line}
+                animate={shouldReduceMotion ? undefined : { opacity: [0.26, 1, 0.4], x: [0, 8, 0] }}
+                transition={{ duration: 1.6, delay: line * 0.18, repeat: Infinity, ease: "easeInOut" }}
+              />
+            ))}
+          </div>
+          <motion.div
+            className="test-framework-error-flicker"
+            animate={shouldReduceMotion ? undefined : { opacity: [0, 0, 0.64, 0, 0] }}
+            transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            retry
+          </motion.div>
+        </div>
+      </div>
+
+      <div className="test-framework-bottom-row">
+        <div className="test-framework-logic">
+          <span className="test-framework-stage-label">logic analyzer</span>
+          <svg viewBox="0 0 220 70" role="img" aria-label="logic analyzer waveform">
+            <motion.path
+              d="M8 18 H28 V44 H48 V18 H72 V44 H94 V18 H118 V44 H142 V18 H166 V44 H188 V18 H212"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              initial={shouldReduceMotion ? undefined : { pathLength: 0.15 }}
+              animate={shouldReduceMotion ? undefined : { pathLength: [0.15, 1, 0.15] }}
+              transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </svg>
+        </div>
+
+        <div className="test-framework-results">
+          <span className="test-framework-stage-label">reporting</span>
+          <div className="test-framework-result-head">
+            <strong>CI summary</strong>
+            <motion.span
+              animate={shouldReduceMotion ? undefined : { boxShadow: ["0 0 0 rgba(117,210,145,0)", "0 0 16px rgba(117,210,145,0.55)", "0 0 0 rgba(117,210,145,0)"] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              pass
+            </motion.span>
+          </div>
+          <div className="test-framework-result-rows">
+            {resultRows.map((row, index) => (
+              <motion.div
+                key={row}
+                animate={shouldReduceMotion ? undefined : { opacity: [0.58, 1, 0.72] }}
+                transition={{ duration: 2.4, delay: index * 0.2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <span />
+                <small>{row}</small>
+              </motion.div>
+            ))}
+          </div>
+          <div className="test-framework-hover-detail">logs • traces • junit xml</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TestFrameworkProjectHighlight() {
+  const shouldReduceMotion = useReducedMotion();
+  const childMotion = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 14 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, amount: 0.2 },
+      };
+
+  return (
+    <motion.article
+      className="carousel-main test-framework-feature-card"
+      initial={shouldReduceMotion ? undefined : { opacity: 0, y: 18 }}
+      whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: 0.58, ease: "easeOut" }}
+    >
+      <div className="test-framework-feature-copy">
+        <motion.div {...childMotion} transition={{ duration: 0.42 }}>
+          <span className="test-framework-eyebrow">Featured validation infrastructure project</span>
+          <h3>Automated Test Framework (PyTest + Jenkins)</h3>
+          <p className="test-framework-category">{testFrameworkProject.category}</p>
+          <p className="test-framework-summary">{testFrameworkProject.summary}</p>
+        </motion.div>
+
+        <motion.div className="test-framework-content-grid" {...childMotion} transition={{ duration: 0.42, delay: 0.08 }}>
+          <section className="test-framework-copy-block">
+            <h4>Key Contributions</h4>
+            <ul className="test-framework-check-list">
+              {testFrameworkProject.contributions.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+          <section className="test-framework-copy-block test-framework-impact-block">
+            <h4>Impact</h4>
+            <ul className="test-framework-impact-list">
+              {testFrameworkProject.impact.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        </motion.div>
+
+        <motion.section className="test-framework-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
+          <h4>Engineering Focus</h4>
+          <div className="test-framework-focus-grid">
+            {testFrameworkProject.focus.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.div className="tag-row test-framework-tech-row" {...childMotion} transition={{ duration: 0.42, delay: 0.24 }}>
+          {testFrameworkProject.tech.map((tag) => (
+            <span key={tag} className="tag">
+              {tag}
+            </span>
+          ))}
+        </motion.div>
+      </div>
+      <motion.div
+        className="test-framework-feature-visual"
+        initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
+        whileInView={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.58, delay: 0.16, ease: "easeOut" }}
+      >
+        <TestPipelineVisualization />
+      </motion.div>
+    </motion.article>
+  );
+}
+
+const memoryMapProject = {
+  category: "Firmware Tooling / Data Engineering / Reporting & Analysis",
+  summary:
+    "Built a large-scale analysis and reporting platform to standardize and evaluate approximately 55,000 memory map variables across multiple engineering tools, helping identify naming inconsistencies, address conflicts, and access-level mismatches across teams.",
+  contributions: [
+    "Normalized labels and standardized text patterns across inconsistent datasets.",
+    "Used spaCy and K-means clustering to group semantically similar variables.",
+    "Built HTML dashboards for address comparison, access analysis, and consistency review.",
+    "Generated Excel outputs for standardization workflows and team-wide review.",
+    "Established a cleaner baseline for memory map naming and address usage.",
+  ],
+  impact: [
+    "Solved a cross-team consistency problem at scale.",
+    "Exposed address conflicts, label mismatches, and access-level drift.",
+    "Connected firmware domain knowledge with large-scale analysis.",
+    "Supported future standardization and reliability work.",
+  ],
+  focus: [
+    "Standardizing labels across tools.",
+    "Comparing usage across teams.",
+    "Surfacing actionable conflicts.",
+    "Balancing automation with manual review.",
+  ],
+  tech: ["Python", "spaCy", "K-means Clustering", "HTML Reports", "Excel Export", "Data Cleaning", "Firmware Memory Maps"],
+};
+
+function MemoryMapVisualization() {
+  const shouldReduceMotion = useReducedMotion();
+  const packetTransition = (duration: number, delay = 0) => ({
+    duration,
+    delay,
+    repeat: shouldReduceMotion ? 0 : Infinity,
+    ease: "linear" as const,
+  });
+  const sourceTools = ["Config Tool", "Service Tool", "Admin Tool", "Factory Tool"];
+  const normalizedLabels = ["BattTemp", "battery_temp", "BAT TEMP"];
+  const clusters = ["TEMP", "ADDR", "ACCESS"];
+
+  return (
+    <div className="memmap-visual" aria-label="Memory map intelligence analysis workflow visualization">
+      <div className="memmap-grid" />
+      <div className="memmap-stage memmap-sources">
+        <span className="memmap-stage-label">sources</span>
+        {sourceTools.map((tool, index) => (
+          <motion.div
+            key={tool}
+            className="memmap-source-node"
+            animate={shouldReduceMotion ? undefined : { opacity: [0.72, 1, 0.72] }}
+            transition={{ duration: 2.8, delay: index * 0.22, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <span />
+            {tool}
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="memmap-flow memmap-flow-a" aria-hidden="true">
+        {[0, 1, 2].map((item) => (
+          <motion.span
+            key={item}
+            animate={shouldReduceMotion ? undefined : { left: ["0%", "100%"], opacity: [0, 1, 1, 0] }}
+            transition={packetTransition(2.4, item * 0.55)}
+          />
+        ))}
+      </div>
+
+      <motion.div
+        className="memmap-processor"
+        animate={shouldReduceMotion ? undefined : { boxShadow: ["0 0 0 rgba(83,146,255,0)", "0 0 28px rgba(83,146,255,0.12)", "0 0 0 rgba(83,146,255,0)"] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <span className="memmap-stage-label">intelligence layer</span>
+        <strong>Normalize</strong>
+        <div className="memmap-processor-tags">
+          <span>Cluster</span>
+          <span>Compare</span>
+          <span>Analyze</span>
+        </div>
+      </motion.div>
+
+      <div className="memmap-normalize">
+        <span className="memmap-stage-label">cleanup</span>
+        {normalizedLabels.map((label, index) => (
+          <motion.div
+            key={label}
+            className="memmap-label-row"
+            animate={shouldReduceMotion ? undefined : { x: [0, 5, 0], opacity: [0.62, 1, 0.78] }}
+            transition={{ duration: 2.6, delay: index * 0.28, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <code>{label}</code>
+            <span>battery_temp</span>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="memmap-clusters">
+        <span className="memmap-stage-label">semantic groups</span>
+        {clusters.map((cluster, clusterIndex) => (
+          <div key={cluster} className="memmap-cluster">
+            <strong>{cluster}</strong>
+            {[0, 1, 2].map((node) => (
+              <motion.span
+                key={`${cluster}-${node}`}
+                animate={shouldReduceMotion ? undefined : { scale: [0.92, 1.08, 0.96], opacity: [0.58, 1, 0.7] }}
+                transition={{ duration: 2.4, delay: clusterIndex * 0.24 + node * 0.16, repeat: Infinity, ease: "easeInOut" }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div className="memmap-conflicts">
+        <span className="memmap-stage-label">diagnostics</span>
+        <div className="memmap-diff-row is-warning">
+          <span>0x4A10</span>
+          <strong>duplicate</strong>
+        </div>
+        <div className="memmap-diff-row">
+          <span>ACCESS</span>
+          <strong>RW / RO</strong>
+        </div>
+        <div className="memmap-diff-row is-warning">
+          <span>LABEL</span>
+          <strong>mismatch</strong>
+        </div>
+      </div>
+
+      <div className="memmap-flow memmap-flow-b" aria-hidden="true">
+        {[0, 1].map((item) => (
+          <motion.span
+            key={item}
+            animate={shouldReduceMotion ? undefined : { left: ["0%", "100%"], opacity: [0, 1, 1, 0] }}
+            transition={packetTransition(2.8, item * 0.8)}
+          />
+        ))}
+      </div>
+
+      <div className="memmap-report">
+        <span className="memmap-stage-label">report output</span>
+        <div className="memmap-metrics">
+          <div>
+            <strong>55k</strong>
+            <span>variables</span>
+          </div>
+          <div>
+            <strong>4</strong>
+            <span>toolchains</span>
+          </div>
+        </div>
+        <div className="memmap-bars">
+          <span style={{ "--bar": "82%" } as React.CSSProperties} />
+          <span style={{ "--bar": "64%" } as React.CSSProperties} />
+          <span style={{ "--bar": "74%" } as React.CSSProperties} />
+        </div>
+        <div className="memmap-table">
+          <span>ADDR</span>
+          <span>NAME</span>
+          <span>ACCESS</span>
+          <span>0x4A10</span>
+          <span>battery_temp</span>
+          <span>RW</span>
+          <span>0x4A14</span>
+          <span>pack_voltage</span>
+          <span>RO</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MemoryMapProjectHighlight() {
+  const shouldReduceMotion = useReducedMotion();
+  const childMotion = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 14 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, amount: 0.2 },
+      };
+
+  return (
+    <motion.article
+      className="carousel-main memmap-feature-card"
+      initial={shouldReduceMotion ? undefined : { opacity: 0, y: 18 }}
+      whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: 0.58, ease: "easeOut" }}
+    >
+      <div className="memmap-feature-copy">
+        <motion.div {...childMotion} transition={{ duration: 0.42 }}>
+          <span className="memmap-eyebrow">Featured systems tooling project</span>
+          <h3>Memory Map Intelligence Platform</h3>
+          <p className="memmap-category">{memoryMapProject.category}</p>
+          <p className="memmap-summary">{memoryMapProject.summary}</p>
+        </motion.div>
+
+        <motion.div className="memmap-content-grid" {...childMotion} transition={{ duration: 0.42, delay: 0.08 }}>
+          <section className="memmap-copy-block">
+            <h4>Key Contributions</h4>
+            <ul className="memmap-check-list">
+              {memoryMapProject.contributions.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+          <section className="memmap-copy-block memmap-impact-block">
+            <h4>Impact</h4>
+            <ul className="memmap-impact-list">
+              {memoryMapProject.impact.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        </motion.div>
+
+        <motion.section className="memmap-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
+          <h4>Engineering Focus</h4>
+          <div className="memmap-focus-grid">
+            {memoryMapProject.focus.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.div className="tag-row memmap-tech-row" {...childMotion} transition={{ duration: 0.42, delay: 0.24 }}>
+          {memoryMapProject.tech.map((tag) => (
+            <span key={tag} className="tag">
+              {tag}
+            </span>
+          ))}
+        </motion.div>
+      </div>
+      <motion.div
+        className="memmap-feature-visual"
+        initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
+        whileInView={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.58, delay: 0.16, ease: "easeOut" }}
+      >
+        <MemoryMapVisualization />
+      </motion.div>
+    </motion.article>
+  );
+}
+
+const bleScanProject = {
+  category: "Wireless Systems / BLE Stack / Low-Level Firmware",
+  summary:
+    "Developed a scan-only BLE mode on the STM32 WBA55 and integrated it into a modular firmware platform, enabling efficient discovery, filtering, and processing of nearby BLE advertisements in a resource-constrained embedded environment.",
+  contributions: [
+    "Configured BLE stack parameters including scan behavior, MTU size, and link-related limits for embedded performance constraints.",
+    "Implemented custom advertisement filtering with Service UUID matching and manufacturer-specific data parsing.",
+    "Interfaced directly with HCI / GAP scanning behavior instead of treating BLE as a black-box library.",
+    "Integrated scan-only behavior into a larger object-oriented firmware architecture.",
+    "Designed selective advertisement processing for targeted discovery flows across specific device classes.",
+    "Reduced unnecessary packet processing in dense BLE environments.",
+  ],
+  impact: [
+    "Demonstrates BLE understanding beyond application-level usage.",
+    "Enables efficient device discovery and filtering in RF-dense environments.",
+    "Balances protocol behavior, memory constraints, and firmware architecture.",
+    "Supports scalable wireless features inside a modular embedded platform.",
+  ],
+  focus: [
+    "Filtering relevant advertisements without wasting MCU resources.",
+    "Working with BLE stack behavior under embedded constraints.",
+    "Parsing variable advertisement payload structures safely.",
+    "Integrating wireless behavior into an existing modular architecture.",
+    "Handling dense scan environments without noisy processing overhead.",
+  ],
+  tech: [
+    "STM32 WBA55",
+    "BLE",
+    "HCI / GAP",
+    "Advertisement Parsing",
+    "Service UUID Filtering",
+    "Manufacturer Data",
+    "Embedded C/C++",
+    "OOP Firmware Architecture",
+  ],
+};
+
+function BleScanVisualization() {
+  const shouldReduceMotion = useReducedMotion();
+  const packetTransition = (duration: number, delay = 0) => ({
+    duration,
+    delay,
+    repeat: shouldReduceMotion ? 0 : Infinity,
+    ease: "linear" as const,
+  });
+  const devices = [
+    { id: "tag-a", label: "svc:180f", className: "ble-scan-device-a", selected: false },
+    { id: "tag-b", label: "uuid:tool", className: "ble-scan-device-b", selected: true },
+    { id: "tag-c", label: "mfg:0x31", className: "ble-scan-device-c", selected: false },
+    { id: "tag-d", label: "svc:feda", className: "ble-scan-device-d", selected: false },
+  ];
+  const packets = [
+    { id: "p0", className: "ble-scan-packet-a", selected: false, duration: 2.9, delay: 0.05 },
+    { id: "p1", className: "ble-scan-packet-b is-selected", selected: true, duration: 3.2, delay: 0.72 },
+    { id: "p2", className: "ble-scan-packet-c", selected: false, duration: 3.4, delay: 1.18 },
+    { id: "p3", className: "ble-scan-packet-d", selected: false, duration: 3.1, delay: 1.72 },
+  ];
+  const stackLayers = ["App", "GAP", "HCI"];
+
+  return (
+    <div className="ble-scan-visual" aria-label="BLE advertisements moving through scan, filter, firmware stack, and selected output">
+      <div className="ble-scan-grid" />
+      <div className="ble-scan-field" aria-hidden="true" />
+
+      <div className="ble-scan-broadcasts">
+        <span className="ble-scan-stage-label">broadcast environment</span>
+        {devices.map((device, index) => (
+          <motion.div
+            key={device.id}
+            className={`ble-scan-device ${device.className} ${device.selected ? "is-target" : ""}`}
+            animate={shouldReduceMotion ? undefined : { opacity: device.selected ? [0.88, 1, 0.9] : [0.55, 0.82, 0.58] }}
+            transition={{ duration: 2.6, delay: index * 0.24, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <span className="ble-scan-wave" />
+            <span className="ble-scan-wave ble-scan-wave-delay" />
+            <strong>{device.selected ? "target" : "adv"}</strong>
+            <small>{device.label}</small>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="ble-scan-packet-layer" aria-hidden="true">
+        {packets.map((packet) => (
+          <motion.span
+            key={packet.id}
+            className={`ble-scan-packet ${packet.className}`}
+            animate={
+              shouldReduceMotion
+                ? undefined
+                : {
+                    offsetDistance: packet.selected ? ["0%", "50%", "100%"] : ["0%", "50%", "62%"],
+                    opacity: packet.selected ? [0, 1, 1, 0.95] : [0, 0.76, 0.24, 0],
+                  }
+            }
+            transition={packetTransition(packet.duration, packet.delay)}
+          />
+        ))}
+      </div>
+
+      <motion.div
+        className="ble-scan-filter"
+        animate={shouldReduceMotion ? undefined : { boxShadow: ["0 0 0 rgba(83,146,255,0)", "0 0 30px rgba(83,146,255,0.15)", "0 0 0 rgba(83,146,255,0)"] }}
+        transition={{ duration: 3.1, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <span className="ble-scan-stage-label">scan field</span>
+        <strong>Filter + Parse</strong>
+        <div className="ble-scan-filter-grid">
+          <span>UUID</span>
+          <span>MFG</span>
+          <span>RSSI</span>
+          <span>TYPE</span>
+        </div>
+        <div className="ble-scan-filter-status">
+          <span>reject noise</span>
+          <strong>select target</strong>
+        </div>
+      </motion.div>
+
+      <div className="ble-scan-stack">
+        <span className="ble-scan-stage-label">firmware stack</span>
+        {stackLayers.map((layer, index) => (
+          <motion.div
+            key={layer}
+            className="ble-scan-stack-layer"
+            animate={shouldReduceMotion ? undefined : { borderColor: ["rgba(255,255,255,0.09)", "rgba(117,210,145,0.24)", "rgba(255,255,255,0.09)"] }}
+            transition={{ duration: 2.7, delay: index * 0.28, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <span>{layer}</span>
+            <small>{index === 0 ? "selective logic" : index === 1 ? "scan events" : "controller path"}</small>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="ble-scan-output">
+        <span className="ble-scan-stage-label">selected output</span>
+        <div className="ble-scan-output-head">
+          <strong>matched advertisements</strong>
+          <motion.span
+            animate={shouldReduceMotion ? undefined : { opacity: [0.55, 1, 0.66] }}
+            transition={{ duration: 1.9, repeat: Infinity, ease: "easeInOut" }}
+          >
+            active
+          </motion.span>
+        </div>
+        <div className="ble-scan-output-row is-accepted">
+          <span />
+          <small>service uuid match</small>
+        </div>
+        <div className="ble-scan-output-row is-accepted">
+          <span />
+          <small>manufacturer payload parsed</small>
+        </div>
+        <div className="ble-scan-output-row">
+          <span />
+          <small>noise suppressed before app logic</small>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BleScanProjectHighlight() {
+  const shouldReduceMotion = useReducedMotion();
+  const childMotion = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 14 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, amount: 0.2 },
+      };
+
+  return (
+    <motion.article
+      className="carousel-main ble-scan-feature-card"
+      initial={shouldReduceMotion ? undefined : { opacity: 0, y: 18 }}
+      whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: 0.58, ease: "easeOut" }}
+    >
+      <div className="ble-scan-feature-copy">
+        <motion.div {...childMotion} transition={{ duration: 0.42 }}>
+          <span className="ble-scan-eyebrow">Featured wireless firmware project</span>
+          <h3>BLE Scan-Only Mode & Stack Integration</h3>
+          <p className="ble-scan-category">{bleScanProject.category}</p>
+          <p className="ble-scan-summary">{bleScanProject.summary}</p>
+        </motion.div>
+
+        <motion.div className="ble-scan-content-grid" {...childMotion} transition={{ duration: 0.42, delay: 0.08 }}>
+          <section className="ble-scan-copy-block">
+            <h4>Key Contributions</h4>
+            <ul className="ble-scan-check-list">
+              {bleScanProject.contributions.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+          <section className="ble-scan-copy-block ble-scan-impact-block">
+            <h4>Impact</h4>
+            <ul className="ble-scan-impact-list">
+              {bleScanProject.impact.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        </motion.div>
+
+        <motion.section className="ble-scan-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
+          <h4>Engineering Focus</h4>
+          <div className="ble-scan-focus-grid">
+            {bleScanProject.focus.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.div className="tag-row ble-scan-tech-row" {...childMotion} transition={{ duration: 0.42, delay: 0.24 }}>
+          {bleScanProject.tech.map((tag) => (
+            <span key={tag} className="tag">
+              {tag}
+            </span>
+          ))}
+        </motion.div>
+      </div>
+      <motion.div
+        className="ble-scan-feature-visual"
+        initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
+        whileInView={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.58, delay: 0.16, ease: "easeOut" }}
+      >
+        <BleScanVisualization />
+      </motion.div>
+    </motion.article>
+  );
+}
+
+const iotLoggerProject = {
+  category: "IoT Systems / Embedded Architecture / Cloud Integration",
+  summary:
+    "Architected an end-to-end embedded IoT data pipeline that collected data from BLE devices, buffered it locally, and uploaded it to AWS over cellular connectivity, with design decisions driven by reliability, bandwidth, and system constraints.",
+  contributions: [
+    "Designed the data flow architecture from BLE ingestion to local storage, cellular upload, and cloud processing.",
+    "Implemented a local buffering strategy using flash-backed storage to preserve data during connectivity loss or upload delays.",
+    "Evaluated MQTT for lightweight telemetry and HTTPS for larger payload or bulk data transfer.",
+    "Built retry handling, batching, and failover behavior around unstable cellular availability.",
+    "Analyzed tradeoffs across latency, reliability, power, and payload size.",
+    "Helped shape a robust device-side design for real-world IoT conditions where connectivity is not guaranteed.",
+  ],
+  impact: [
+    "Demonstrates device-to-cloud systems thinking.",
+    "Improves data reliability by preventing loss during poor network conditions.",
+    "Balances embedded constraints with cloud integration requirements.",
+    "Designs around real-world failure modes instead of ideal lab conditions.",
+    "Bridges firmware, storage strategy, communications, and cloud-facing architecture.",
+  ],
+  focus: [
+    "Preserving data integrity during intermittent connectivity.",
+    "Choosing protocols for different telemetry and payload patterns.",
+    "Buffering efficiently without overcomplicating embedded control logic.",
+    "Balancing power, latency, reliability, and payload size.",
+    "Coordinating BLE, storage, cellular, and cloud layers in one architecture.",
+  ],
+  tech: ["BLE", "Cellular", "AWS", "MQTT", "HTTPS", "Local Buffering", "Embedded C/C++", "IoT Architecture", "Data Reliability"],
+};
+
+function IotLoggerVisualization() {
+  const shouldReduceMotion = useReducedMotion();
+  const packetTransition = (duration: number, delay = 0) => ({
+    duration,
+    delay,
+    repeat: shouldReduceMotion ? 0 : Infinity,
+    ease: "linear" as const,
+  });
+  const bleSources = [
+    { id: "sensor-a", label: "BLE 01", detail: "temp", className: "iot-logger-source-a" },
+    { id: "sensor-b", label: "BLE 02", detail: "usage", className: "iot-logger-source-b" },
+    { id: "sensor-c", label: "BLE 03", detail: "state", className: "iot-logger-source-c" },
+  ];
+  const queueSlots = ["rx", "hold", "batch", "send", "ack"];
+  const cloudRows = ["telemetry accepted", "bulk payload stored", "device shadow updated"];
+
+  return (
+    <div className="iot-logger-visual" aria-label="BLE devices to embedded buffer to cellular upload to AWS cloud ingestion architecture">
+      <div className="iot-logger-grid" />
+      <div className="iot-logger-lane iot-logger-lane-ingest" aria-hidden="true">
+        {[0, 1, 2].map((packet) => (
+          <motion.span
+            key={packet}
+            className="iot-logger-packet iot-logger-packet-ble"
+            animate={shouldReduceMotion ? undefined : { left: ["0%", "100%"], opacity: [0, 1, 1, 0] }}
+            transition={packetTransition(2.7, packet * 0.55)}
+          />
+        ))}
+      </div>
+      <div className="iot-logger-lane iot-logger-lane-cellular" aria-hidden="true">
+        {[0, 1].map((packet) => (
+          <motion.span
+            key={packet}
+            className="iot-logger-packet iot-logger-packet-upload"
+            animate={
+              shouldReduceMotion
+                ? undefined
+                : {
+                    left: ["0%", "34%", "34%", "100%"],
+                    opacity: [0, 1, 0.28, 1, 0],
+                    scale: [0.9, 1, 0.88, 1, 0.9],
+                  }
+            }
+            transition={packetTransition(5.4, packet * 1.6)}
+          />
+        ))}
+      </div>
+      <div className="iot-logger-lane iot-logger-lane-cloud" aria-hidden="true">
+        {[0, 1].map((packet) => (
+          <motion.span
+            key={packet}
+            className="iot-logger-packet iot-logger-packet-cloud"
+            animate={shouldReduceMotion ? undefined : { top: ["0%", "100%"], opacity: [0, 1, 1, 0] }}
+            transition={packetTransition(3.8, packet * 1.15 + 0.5)}
+          />
+        ))}
+      </div>
+
+      <section className="iot-logger-sources">
+        <span className="iot-logger-stage-label">BLE ingestion</span>
+        {bleSources.map((source, index) => (
+          <motion.div
+            key={source.id}
+            className={`iot-logger-source ${source.className}`}
+            animate={shouldReduceMotion ? undefined : { opacity: [0.64, 1, 0.7] }}
+            transition={{ duration: 2.4, delay: index * 0.24, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <span className="iot-logger-source-ring" />
+            <strong>{source.label}</strong>
+            <small>{source.detail}</small>
+          </motion.div>
+        ))}
+      </section>
+
+      <motion.section
+        className="iot-logger-device"
+        animate={shouldReduceMotion ? undefined : { boxShadow: ["0 0 0 rgba(83,146,255,0)", "0 0 32px rgba(83,146,255,0.14)", "0 0 0 rgba(83,146,255,0)"] }}
+        transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <span className="iot-logger-stage-label">embedded device</span>
+        <strong>Collector + Uploader</strong>
+        <div className="iot-logger-device-tags">
+          <span>BLE RX</span>
+          <span>RTC</span>
+          <span>FSM</span>
+          <span>Modem</span>
+        </div>
+        <div className="iot-logger-buffer">
+          <span className="iot-logger-buffer-head">flash queue</span>
+          <div className="iot-logger-buffer-slots" aria-label="local buffered packet queue">
+            {queueSlots.map((slot, index) => (
+              <motion.span
+                key={slot}
+                animate={shouldReduceMotion ? undefined : { opacity: [0.38, 1, 0.56], y: [0, -2, 0] }}
+                transition={{ duration: 2.2, delay: index * 0.22, repeat: Infinity, ease: "easeInOut" }}
+              >
+                {slot}
+              </motion.span>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
+      <section className="iot-logger-network">
+        <span className="iot-logger-stage-label">cellular uplink</span>
+        <div className="iot-logger-signal">
+          {[0, 1, 2, 3].map((bar) => (
+            <motion.span
+              key={bar}
+              animate={shouldReduceMotion ? undefined : { opacity: bar === 3 ? [0.2, 0.7, 0.28] : [0.38, 1, 0.46] }}
+              transition={{ duration: 3.4, delay: bar * 0.14, repeat: Infinity, ease: "easeInOut" }}
+            />
+          ))}
+        </div>
+        <div className="iot-logger-protocols">
+          <motion.span
+            animate={shouldReduceMotion ? undefined : { borderColor: ["rgba(117,210,145,0.2)", "rgba(117,210,145,0.48)", "rgba(117,210,145,0.2)"] }}
+            transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+          >
+            MQTT telemetry
+          </motion.span>
+          <motion.span
+            animate={shouldReduceMotion ? undefined : { borderColor: ["rgba(83,146,255,0.18)", "rgba(83,146,255,0.48)", "rgba(83,146,255,0.18)"] }}
+            transition={{ duration: 3.6, delay: 0.65, repeat: Infinity, ease: "easeInOut" }}
+          >
+            HTTPS batch
+          </motion.span>
+        </div>
+        <motion.div
+          className="iot-logger-retry"
+          animate={shouldReduceMotion ? undefined : { opacity: [0.42, 1, 0.5], x: [0, -3, 0] }}
+          transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+        >
+          retry window -&gt; queue retained
+        </motion.div>
+      </section>
+
+      <section className="iot-logger-cloud">
+        <span className="iot-logger-stage-label">AWS endpoint</span>
+        <div className="iot-logger-cloud-head">
+          <strong>Cloud Ingestion</strong>
+          <motion.span
+            animate={shouldReduceMotion ? undefined : { opacity: [0.58, 1, 0.66] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            ack
+          </motion.span>
+        </div>
+        <div className="iot-logger-cloud-rows">
+          {cloudRows.map((row, index) => (
+            <motion.div
+              key={row}
+              animate={shouldReduceMotion ? undefined : { backgroundColor: ["rgba(255,255,255,0.035)", "rgba(117,210,145,0.075)", "rgba(255,255,255,0.035)"] }}
+              transition={{ duration: 3, delay: index * 0.34, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <span />
+              <small>{row}</small>
+            </motion.div>
+          ))}
+        </div>
+        <div className="iot-logger-cloud-detail">iot core / storage / processing</div>
+      </section>
+
+      <div className="iot-logger-status-strip">
+        <span>offline tolerant</span>
+        <strong>buffer -&gt; retry -&gt; deliver</strong>
+      </div>
+    </div>
+  );
+}
+
+function IotLoggerProjectHighlight() {
+  const shouldReduceMotion = useReducedMotion();
+  const childMotion = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 14 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, amount: 0.2 },
+      };
+
+  return (
+    <motion.article
+      className="carousel-main iot-logger-feature-card"
+      initial={shouldReduceMotion ? undefined : { opacity: 0, y: 18 }}
+      whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: 0.58, ease: "easeOut" }}
+    >
+      <div className="iot-logger-feature-copy">
+        <motion.div {...childMotion} transition={{ duration: 0.42 }}>
+          <span className="iot-logger-eyebrow">Featured system architecture project</span>
+          <h3>IoT Data Logger (BLE + Cellular + AWS)</h3>
+          <p className="iot-logger-category">{iotLoggerProject.category}</p>
+          <p className="iot-logger-summary">{iotLoggerProject.summary}</p>
+        </motion.div>
+
+        <motion.div className="iot-logger-content-grid" {...childMotion} transition={{ duration: 0.42, delay: 0.08 }}>
+          <section className="iot-logger-copy-block">
+            <h4>Key Contributions</h4>
+            <ul className="iot-logger-check-list">
+              {iotLoggerProject.contributions.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+          <section className="iot-logger-copy-block iot-logger-impact-block">
+            <h4>Impact</h4>
+            <ul className="iot-logger-impact-list">
+              {iotLoggerProject.impact.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        </motion.div>
+
+        <motion.section className="iot-logger-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
+          <h4>Engineering Focus</h4>
+          <div className="iot-logger-focus-grid">
+            {iotLoggerProject.focus.map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.div className="tag-row iot-logger-tech-row" {...childMotion} transition={{ duration: 0.42, delay: 0.24 }}>
+          {iotLoggerProject.tech.map((tag) => (
+            <span key={tag} className="tag">
+              {tag}
+            </span>
+          ))}
+        </motion.div>
+      </div>
+      <motion.div
+        className="iot-logger-feature-visual"
+        initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.98 }}
+        whileInView={shouldReduceMotion ? undefined : { opacity: 1, scale: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.58, delay: 0.16, ease: "easeOut" }}
+      >
+        <IotLoggerVisualization />
+      </motion.div>
+    </motion.article>
+  );
+}
+
 function Highlights() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const defaultProjectIndex = Math.max(
+    0,
+    highlights.findIndex((item) => item.featured === "memory-map"),
+  );
+  const [activeIndex, setActiveIndex] = useState(defaultProjectIndex);
+  const [hasManualSelection, setHasManualSelection] = useState(false);
+
+  const selectHighlight = useCallback((index: number) => {
+    setHasManualSelection(true);
+    setActiveIndex(index);
+  }, []);
 
   useEffect(() => {
+    if (hasManualSelection) return;
+
     const timer = window.setInterval(() => {
       setActiveIndex((value) => (value + 1) % highlights.length);
     }, 6500);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [hasManualSelection]);
 
   const active = highlights[activeIndex];
 
@@ -813,26 +2028,45 @@ function Highlights() {
       />
       <ContainerScroll>
         <div className="signature-scroll-content">
-          <div className="carousel">
-            <article className="carousel-main">
-              <img key={active.image} src={active.image} alt={active.title} className="carousel-image" />
-              <div className="carousel-body">
-                <h3>{active.title}</h3>
-                <p>{active.blurb}</p>
-                <a href="#experience" className="inline-link">
-                  See related experience
-                </a>
-              </div>
-            </article>
+          <div className="carousel carousel-full">
+            {active.featured === "iot-logger" ? (
+              <IotLoggerProjectHighlight />
+            ) : active.featured === "memory-map" ? (
+              <MemoryMapProjectHighlight />
+            ) : active.featured === "ble-scan" ? (
+              <BleScanProjectHighlight />
+            ) : active.featured === "test-framework" ? (
+              <TestFrameworkProjectHighlight />
+            ) : active.featured === "dma-uart" ? (
+              <DmaProjectHighlight />
+            ) : (
+              <article className="carousel-main">
+                <img key={active.image} src={active.image} alt={active.title} className="carousel-image" />
+                <div className="carousel-body">
+                  <h3>{active.title}</h3>
+                  <p>{active.blurb}</p>
+                  <a href="#experience" className="inline-link">
+                    See related experience
+                  </a>
+                </div>
+              </article>
+            )}
             <div className="carousel-thumbs" role="tablist" aria-label="Work highlights">
               {highlights.map((item, index) => (
                 <button
                   key={item.title}
                   type="button"
                   className={`carousel-thumb ${index === activeIndex ? "is-active" : ""}`}
-                  onClick={() => setActiveIndex(index)}
+                  aria-selected={index === activeIndex}
+                  role="tab"
+                  onPointerDown={(event) => {
+                    if (event.pointerType === "mouse" && event.button !== 0) return;
+                    selectHighlight(index);
+                  }}
+                  onClick={() => selectHighlight(index)}
+                  onDragStart={(event) => event.preventDefault()}
                 >
-                  <img src={item.image} alt="" className="carousel-thumb-image" />
+                  <img src={item.image} alt="" className="carousel-thumb-image" draggable={false} />
                   <span className="carousel-thumb-body">
                     <span className="carousel-thumb-title">{item.title}</span>
                     <span className="carousel-thumb-text">{item.blurb}</span>
