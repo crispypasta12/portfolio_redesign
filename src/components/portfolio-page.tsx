@@ -62,32 +62,44 @@ type Testimonial = {
 };
 
 const typedPhrases = [
-  "I'm Raqueed - Platform & Systems Engineer",
-  "4+ years building edge-to-cloud IoT infrastructure",
-  "STM32 | FreeRTOS | BLE | AWS IoT | PyTest",
+  "I'm Raqueed - Embedded Firmware Engineer",
+  "BSP development | Device drivers | ARM Cortex-M",
+  "STM32 | Silicon Labs | FreeRTOS | BLE | AWS IoT",
 ];
 
 const sectionIds = ["hero", "about", "work", "publications", "experience"];
 
 const spotlights: Spotlight[] = [
   {
-    label: "// embedded",
-    title: "Embedded Systems",
-    description: "STM32 | FreeRTOS | BLE | Cellular | GPS",
+    label: "// drivers",
+    title: "BSP & Driver Development",
+    description: "STM32 | Silicon Labs | DMA | CAN | HAL | Bootloaders",
   },
   {
-    label: "// cloud",
-    title: "Data & Telemetry",
-    description: "AWS Athena | MQTT | Python | Pipelines",
+    label: "// embedded",
+    title: "Embedded Firmware",
+    description: "ARM Cortex-M | FreeRTOS | BLE | Cellular | GPS",
   },
   {
     label: "// test",
     title: "Validation",
     description: "PyTest | Jenkins | HIL and lab rigs",
   },
+  {
+    label: "// cloud",
+    title: "Data & Telemetry",
+    description: "AWS Athena | MQTT | Python | Pipelines",
+  },
 ];
 
 const highlights: Highlight[] = [
+  {
+    title: "BSP & Driver Development",
+    blurb:
+      "Built complete Board Support Packages from the ground up for STM32 and Silicon Labs — UART, SPI, I2C, CAN, ADC drivers, DMA controllers, clock trees, PLL configuration, and HAL layers.",
+    image:
+      "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF1714",
+  },
   {
     title: "Connected Tools Platform",
     blurb:
@@ -103,18 +115,18 @@ const highlights: Highlight[] = [
       "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Tennessee/DSCF4775",
   },
   {
-    title: "Field Telemetry",
+    title: "Power Domain Management",
     blurb:
-      "Signed URLs, structured logs, and Athena queries to observe device behavior in the field.",
+      "Peripheral power-on/off sequences, sleep/deep sleep/standby transitions, clock gating, and wake-up interrupt handlers — measurably reducing active and standby current consumption.",
     image:
       "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF3797",
   },
   {
-    title: "Firmware Craft",
+    title: "Field Telemetry",
     blurb:
-      "STM32 drivers, FreeRTOS, power modes, and watchdog systems designed to survive production reality.",
+      "Signed URLs, structured logs, and Athena queries to observe device behavior in the field.",
     image:
-      "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF1714",
+      "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF5843",
   },
 ];
 
@@ -122,14 +134,14 @@ const techCards: TechCardData[] = [
   {
     title: "Embedded Firmware",
     description:
-      "HAL and LL work, interrupt-safe drivers, state machines, watchdog recovery, and OTA flows.",
-    tags: ["C", "C++", "STM32", "FreeRTOS"],
+      "BSP development, peripheral device drivers built from scratch, DMA controllers, clock tree configuration, PLL settings, HAL layers, interrupt-safe state machines, and OTA flows.",
+    tags: ["C", "C++", "STM32", "Silicon Labs", "FreeRTOS", "DMA", "ARM Cortex-M"],
   },
   {
     title: "Connectivity & Protocols",
     description:
-      "BLE, Cellular, Wi-Fi, GPS/GNSS, plus MQTT, HTTP, CoAP, and secure provisioning work.",
-    tags: ["BLE", "MQTT", "HTTP", "GNSS"],
+      "CAN bus, BLE, Cellular, Wi-Fi, GPS/GNSS, plus MQTT, HTTP, TLS/SSL, AT command interfaces, and secure provisioning.",
+    tags: ["CAN", "BLE", "MQTT", "GNSS", "TLS/SSL"],
   },
   {
     title: "Device to Cloud",
@@ -149,28 +161,29 @@ const experience: ExperienceCompany[] = [
   {
     company: "Milwaukee Tool",
     logo: "/uploads/work_milwaukee.webp",
-    tenure: "Jun 2022 - Present | Milwaukee, WI",
+    tenure: "Jun 2022 – Mar 2025 | Milwaukee, WI",
     roles: [
       {
-        title: "Electrical Engineer II | Platform IoT",
-        time: "Jan 2024 - Present",
+        title: "Embedded System Engineer II | Platform IoT",
+        time: "Jan 2024 – Mar 2025",
         bullets: [
-          "Built and scaled firmware across BLE, Cellular, and Wi-Fi from device communications through secure cloud integration on a connected-tools platform serving thousands of field devices.",
-          "Implemented OTA update flows and device-to-cloud patterns with MQTT and HTTPS, credential hygiene, signed URLs, and fleet registry considerations.",
-          "Established PyTest-based regression fixtures and expanded automated coverage across BLE, Wi-Fi, Cellular, and GPS/GNSS with Jenkins CI validation.",
+          "Developed BSP and device drivers for ARM Cortex-M platforms (STM32, Silicon Labs) integrating CAN bus, UART, SPI, I2C, BLE radios, cellular modems, and GNSS receivers — built from the ground up including DMA controllers, clock tree configuration, and PLL settings.",
+          "Implemented power domain management firmware including peripheral power-on/off sequences, sleep/deep sleep/standby transitions, clock gating, and wake-up handlers, achieving measurable reductions in active and standby power consumption.",
+          "Designed hardware abstraction layers (HAL) enabling firmware portability across STM32 and Silicon Labs platform variants, and debugged hardware integration issues using JTAG/SWD (ST-Link, J-Link), logic analyzers, and oscilloscopes.",
+          "Implemented OTA update flows and device-to-cloud patterns with MQTT and HTTPS, and established PyTest-based regression fixtures with Jenkins CI across BLE, Cellular, GPS/GNSS, and CAN.",
         ],
-        tags: ["C", "C++", "STM32", "BLE", "OTA", "MQTT", "AWS IoT", "PyTest", "Jenkins"],
+        tags: ["C", "C++", "STM32", "Silicon Labs", "DMA", "CAN", "BLE", "OTA", "MQTT", "AWS IoT", "PyTest", "Jenkins"],
       },
       {
-        title: "Electrical Engineer I | Platform IoT",
-        time: "Jun 2022 - Dec 2023",
+        title: "Embedded System Engineer I | Platform IoT",
+        time: "Jun 2022 – Dec 2023",
         bullets: [
-          "Shipped production firmware features on STM32 and Silabs platforms, including BLE advertisement patterns, watchdog recovery, ADC pipelines, power-manager state machines, and UART/DMA drivers.",
-          "Led hardware debugging and validation campaigns and introduced GoogleTest as the first structured unit-testing layer on the platform.",
+          "Built peripheral device drivers from scratch on STM32 and Silicon Labs — UART, SPI, I2C, CAN, ADC, GPIO — with DMA controller configuration for memory-to-peripheral and circular buffer transfer modes.",
+          "Configured clock trees including HSI/HSE/PLL sources, AHB/APB prescalers, and peripheral clock enables for optimal performance and power trade-offs.",
+          "Shipped FreeRTOS-based multi-threaded firmware with BLE advertisement patterns, watchdog recovery, power-manager state machines, and introduced GoogleTest as the first structured unit-testing layer.",
           "Prototyped MQTT plus GPS tracking on Quectel cellular modules and delivered an AWS-backed Python GUI for real-time field monitoring.",
-          "Authored design documents and review materials while coordinating with hardware, cloud, and QA teams.",
         ],
-        tags: ["C", "STM32", "Silabs", "FreeRTOS", "GoogleTest", "MQTT", "Python", "Quectel", "AWS"],
+        tags: ["C", "STM32", "Silicon Labs", "FreeRTOS", "DMA", "CAN", "GoogleTest", "MQTT", "Python", "Quectel", "AWS"],
       },
     ],
   },
@@ -336,31 +349,38 @@ const hobbies = [
 const testimonials: Testimonial[] = [
   {
     quote:
-      "Raqueed's firmware landed cleanly in production with robust drivers, clear state machines, and logs that made fleet issues debuggable.",
-    name: "Srinivas K.",
-    role: "Sr. Platform Architect",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Srinivas&backgroundColor=b6e3f4",
+      "Syed is an accomplished IoT engineer who will be an excellent addition to any team he joins. In my team, he consistently helped other team members while he also took on tricky feature development and data analysis. Point Syed in the right direction, and he will take on big problems quickly.",
+    name: "Frank Welz",
+    role: "Engineering Manager at Milwaukee Tool",
+    image: "/uploads/testimonial-frank-welz.jpg",
   },
   {
     quote:
-      "He built a pragmatic OTA and telemetry pipeline end-to-end. Our field teams finally had real signal instead of guesswork.",
-    name: "Amy L.",
-    role: "Product Manager, Connected Tools",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Amy&backgroundColor=d1d4f9",
+      "I had the pleasure of working with Syed Raqueed Bin Alvee, and I consistently found him to be adaptable, thoughtful, and technically capable. He demonstrated a strong ability to learn new tools and languages quickly and apply them effectively, even in unfamiliar problem spaces. Syed brings a balanced skill set that spans both software development and data-driven problem solving, and he approaches challenges with curiosity and persistence. Just as importantly, he is kind-hearted, genuine, and a pleasure to work with. I would gladly work with Syed again and highly recommend him to future employers.",
+    name: "Matt Halenka",
+    role: "Senior Principal Firmware Engineer at Milwaukee Tool",
+    image: "/uploads/testimonial-matt-halenka.jpg",
   },
   {
     quote:
-      "Brought discipline to validation with PyTest and HIL rigs. Regression coverage improved and so did our sleep.",
-    name: "Dave R.",
-    role: "Validation Lead",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=DaveR&backgroundColor=c0aede",
+      "Has result-driven mindset. Check off task upon finish.",
+    name: "Thomas Liu",
+    role: "Embedded System Engineer at Modular Medical",
+    image: "/uploads/testimonial-thomas-liu.jpg",
   },
   {
     quote:
-      "Solid communicator who moves features from bench to fleet with observability in place.",
-    name: "Anita P.",
-    role: "Firmware Manager",
-    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anita&backgroundColor=ffdfbf",
+      "Working with Syed for over a year has been more than a pleasure. He's a capable engineer with great passion in machine learning, IoT and embedded system. To his peers, he's a great mentor, friend, and supporter regardless of circumstances. Apart from effectively handling difficult tasks using in-depth knowledge and tools at hand, he's always curious of problems of his colleagues, helping bouncing off ideas and cultivating a unified work environment for everyone.",
+    name: "Hanyu Zhu",
+    role: "Firmware Engineer at Milwaukee Tool",
+    image: "/uploads/testimonial-hanyu-zhu.jpg",
+  },
+  {
+    quote:
+      "Syed helped me grow significantly as an EDP. His selfless mindset leads him always willing to lend a hand. No matter what type of question I have, Syed is always willing to listen and try his best to help me out. He is urgent and responsive and always willing to hop on a call. Even in situations where he may not know the answer directly, he always points me in the right direction. He also does a great job at explaining things for anyone to understand. On top of all of that, he carries a consistently positive attitude that energizes the workspace. I think Syed's contributed greatly to the one team mentality in the CHI office.",
+    name: "Abby Haluska",
+    role: "Firmware Engineer II at Milwaukee Tool",
+    image: "/uploads/testimonial-abby-haluska.jpg",
   },
 ];
 
@@ -621,7 +641,7 @@ function SectionHeading({
   );
 }
 
-function Hero() {
+function Hero({ totalCitations }: { totalCitations: number }) {
   const typed = useTypewriter(typedPhrases, 50);
   const heroRef = useRef<HTMLElement | null>(null);
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
@@ -697,16 +717,16 @@ function Hero() {
           </div>
           <div className="hero-float-card hero-float-card-right">
             <span className="hero-float-label">Focus</span>
-            <strong>Platform IoT</strong>
+            <strong>BSP & Firmware</strong>
           </div>
           <div className="hero-float-card hero-float-card-left">
-            <span className="hero-float-label">Shipped</span>
-            <strong>Embedded + Cloud</strong>
+            <span className="hero-float-label">Platforms</span>
+            <strong>STM32 + Silicon Labs</strong>
           </div>
         </div>
         <div className="hero-badge">
           <span className="badge-dot" />
-          Open to collaborations
+          Open to opportunities
         </div>
         <h1 className="hero-title">{headline}</h1>
         <p className="hero-subline">
@@ -714,8 +734,8 @@ function Hero() {
           <span className="cursor" />
         </p>
         <p className="hero-supporting">
-          I build embedded and IoT systems that hold up in production, from firmware and
-          connectivity to telemetry, validation, and fleet-scale reliability.
+          I build embedded firmware from the silicon up — BSP, device drivers, DMA controllers,
+          clock trees — and connect devices all the way to cloud-scale telemetry and validation.
         </p>
         <div className="hero-actions">
           <a href="#work" className="button button-primary">
@@ -730,11 +750,11 @@ function Hero() {
         </div>
         <div className="hero-stats">
           <span>
-            <strong>91</strong> citations
+            <strong>{totalCitations}</strong> citations
           </span>
           <span className="dot-separator" />
           <span>
-            <strong>6</strong> papers & thesis
+            <strong>5</strong> papers
           </span>
           <span className="dot-separator" />
           <span>
@@ -899,7 +919,7 @@ function TechStack() {
   );
 }
 
-function Publications() {
+function Publications({ totalCitations }: { totalCitations: number }) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
   return (
@@ -911,7 +931,7 @@ function Publications() {
       />
       <div className="publication-stats">
         <div>
-          <span className="publication-stat-number">91</span>
+          <span className="publication-stat-number">{totalCitations}</span>
           <span className="publication-stat-label">total citations</span>
         </div>
         <div>
@@ -947,12 +967,12 @@ function Publications() {
                       </span>
                     </span>
                     <span className="publication-side">
-                      {publication.citations !== null ? (
+                      {publication.citations !== null && (
                         <span className="publication-citations">
                           <strong>{publication.citations}</strong>
                           <span>citations</span>
                         </span>
-                      ) : null}
+                      )}
                       <span className="publication-expand">{isOpen ? "collapse" : "expand"}</span>
                     </span>
                   </span>
@@ -1127,12 +1147,12 @@ function CallToAction() {
           <div>
             <div className="cta-badge">
               <span className="badge-dot" />
-              Open to collaborations
+              Open to opportunities
             </div>
-            <h2>Have a device that needs secure, reliable firmware?</h2>
+            <h2>Looking for an embedded systems engineer who ships?</h2>
             <p>
-              Firmware prototypes, fleet hardening, validation automation, or just a useful technical
-              conversation.
+              BSP development, device drivers, firmware from silicon to cloud — open to full-time
+              embedded or platform engineering roles.
             </p>
           </div>
           <div className="cta-actions">
@@ -1151,6 +1171,8 @@ function CallToAction() {
 
 export function PortfolioPage() {
   const activeSection = useActiveSection(sectionIds);
+
+  const totalCitations = publications.reduce((sum, pub) => sum + (pub.citations ?? 0), 0);
 
   return (
     <>
@@ -1175,11 +1197,21 @@ export function PortfolioPage() {
           <li>
             <a href="mailto:raqueed@outlook.com">Contact</a>
           </li>
+          <li>
+            <a href="https://linkedin.com/in/raqueed" target="_blank" rel="noreferrer" className="nav-linkedin" aria-label="LinkedIn">
+              LinkedIn
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/crispypasta12" target="_blank" rel="noreferrer" aria-label="GitHub">
+              GitHub
+            </a>
+          </li>
         </ul>
       </nav>
 
       <main>
-        <Hero />
+        <Hero totalCitations={totalCitations} />
         <div className="divider" />
         <Spotlights />
         <div className="divider" />
@@ -1187,7 +1219,7 @@ export function PortfolioPage() {
         <div className="divider" />
         <TechStack />
         <div className="divider" />
-        <Publications />
+        <Publications totalCitations={totalCitations} />
         <div className="divider" />
         <Experience />
         <div className="divider" />
@@ -1202,7 +1234,11 @@ export function PortfolioPage() {
       <footer className="footer">
         <div className="page footer-inner">
           <span>© 2026 Syed Raqueed Bin Alvee</span>
-          <a href="mailto:raqueed@outlook.com">raqueed@outlook.com</a>
+          <div className="footer-links">
+            <a href="mailto:raqueed@outlook.com">raqueed@outlook.com</a>
+            <a href="https://linkedin.com/in/raqueed" target="_blank" rel="noreferrer">LinkedIn</a>
+            <a href="https://github.com/crispypasta12" target="_blank" rel="noreferrer">GitHub</a>
+          </div>
         </div>
       </footer>
     </>

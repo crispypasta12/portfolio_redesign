@@ -522,7 +522,7 @@ img {
 }
 
 .spotlights {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .tech-grid {
@@ -1021,7 +1021,13 @@ img {
   width: 56px;
   height: 56px;
   border-radius: 50%;
+  object-fit: cover;
   background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(245, 158, 11, 0.95);
+  box-shadow:
+    0 0 0 3px rgba(245, 158, 11, 0.18),
+    0 0 18px rgba(245, 158, 11, 0.42),
+    0 8px 24px rgba(8, 10, 20, 0.28);
 }
 
 .testimonial-quote {
@@ -1086,6 +1092,12 @@ img {
 
 .footer-inner a {
   text-decoration: none;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
 }
 
 @keyframes char-reveal {
@@ -1193,7 +1205,10 @@ img {
 }
 
 @media (max-width: 980px) {
-  .spotlights,
+  .spotlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .tech-grid,
   .education-grid,
   .carousel,
@@ -1300,6 +1315,10 @@ img {
 
   .hero-supporting {
     font-size: 0.92rem;
+  }
+
+  .spotlights {
+    grid-template-columns: 1fr;
   }
 
   .hobby-card {
