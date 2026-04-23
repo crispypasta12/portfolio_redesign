@@ -1,12 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-type Spotlight = {
-  label: string;
-  title: string;
-  description: string;
-};
+import { BGPattern } from "@/components/ui/bg-pattern";
+import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import { GlowCard } from "@/components/ui/spotlight-card";
+import { OrbitingSkills } from "./orbiting-skills";
 
 type Highlight = {
   title: string;
@@ -49,6 +47,8 @@ type Publication = {
   year: string;
   citations: number | null;
   doi: string | null;
+  downloadUrl?: string;
+  downloadLabel?: string;
   funding: string | null;
   abstract: string;
   keywords: string[];
@@ -56,6 +56,7 @@ type Publication = {
 
 type Testimonial = {
   quote: string;
+  highlight: string;
   name: string;
   role: string;
   image: string;
@@ -68,29 +69,6 @@ const typedPhrases = [
 ];
 
 const sectionIds = ["hero", "about", "work", "publications", "experience"];
-
-const spotlights: Spotlight[] = [
-  {
-    label: "// drivers",
-    title: "BSP & Driver Development",
-    description: "STM32 | Silicon Labs | DMA | CAN | HAL | Bootloaders",
-  },
-  {
-    label: "// embedded",
-    title: "Embedded Firmware",
-    description: "ARM Cortex-M | FreeRTOS | BLE | Cellular | GPS",
-  },
-  {
-    label: "// test",
-    title: "Validation",
-    description: "PyTest | Jenkins | HIL and lab rigs",
-  },
-  {
-    label: "// cloud",
-    title: "Data & Telemetry",
-    description: "AWS Athena | MQTT | Python | Pipelines",
-  },
-];
 
 const highlights: Highlight[] = [
   {
@@ -311,12 +289,29 @@ const publications: Publication[] = [
     year: "2022",
     citations: null,
     doi: null,
+    downloadUrl: "/uploads/Master%27s%20Thesis.pdf",
+    downloadLabel: "Download thesis",
     funding: "DOE (DE-EE0009026) | NSF (EEC-1359414) | KERI",
     abstract:
       "Master's thesis expanding on the ransomware detection research for digital substations, covering attack modeling and CNN-based detection methods with broader experimental analysis.",
     keywords: ["ransomware", "AI", "CNN", "smart grid", "substation", "thesis"],
   },
 ];
+
+const selfAuthorPattern = /(S\.?\s*R\.?\s*B\.?\s*Alvee|S\.?\s*R\.?\s*Bin\s+Alvee)/g;
+const selfAuthorExactPattern = /^(?:S\.?\s*R\.?\s*B\.?\s*Alvee|S\.?\s*R\.?\s*Bin\s+Alvee)$/;
+
+function renderPublicationAuthors(authors: string) {
+  return authors.split(selfAuthorPattern).map((part, index) =>
+    selfAuthorExactPattern.test(part) ? (
+      <span key={`${part}-${index}`} className="publication-author-self">
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  );
+}
 
 const hobbies = [
   {
@@ -350,6 +345,7 @@ const testimonials: Testimonial[] = [
   {
     quote:
       "Syed is an accomplished IoT engineer who will be an excellent addition to any team he joins. In my team, he consistently helped other team members while he also took on tricky feature development and data analysis. Point Syed in the right direction, and he will take on big problems quickly.",
+    highlight: "Point Syed in the right direction, and he will take on big problems quickly.",
     name: "Frank Welz",
     role: "Engineering Manager at Milwaukee Tool",
     image: "/uploads/testimonial-frank-welz.jpg",
@@ -357,6 +353,7 @@ const testimonials: Testimonial[] = [
   {
     quote:
       "I had the pleasure of working with Syed Raqueed Bin Alvee, and I consistently found him to be adaptable, thoughtful, and technically capable. He demonstrated a strong ability to learn new tools and languages quickly and apply them effectively, even in unfamiliar problem spaces. Syed brings a balanced skill set that spans both software development and data-driven problem solving, and he approaches challenges with curiosity and persistence. Just as importantly, he is kind-hearted, genuine, and a pleasure to work with. I would gladly work with Syed again and highly recommend him to future employers.",
+    highlight: "adaptable, thoughtful, and technically capable",
     name: "Matt Halenka",
     role: "Senior Principal Firmware Engineer at Milwaukee Tool",
     image: "/uploads/testimonial-matt-halenka.jpg",
@@ -364,6 +361,7 @@ const testimonials: Testimonial[] = [
   {
     quote:
       "Has result-driven mindset. Check off task upon finish.",
+    highlight: "result-driven mindset",
     name: "Thomas Liu",
     role: "Embedded System Engineer at Modular Medical",
     image: "/uploads/testimonial-thomas-liu.jpg",
@@ -371,6 +369,7 @@ const testimonials: Testimonial[] = [
   {
     quote:
       "Working with Syed for over a year has been more than a pleasure. He's a capable engineer with great passion in machine learning, IoT and embedded system. To his peers, he's a great mentor, friend, and supporter regardless of circumstances. Apart from effectively handling difficult tasks using in-depth knowledge and tools at hand, he's always curious of problems of his colleagues, helping bouncing off ideas and cultivating a unified work environment for everyone.",
+    highlight: "effectively handling difficult tasks using in-depth knowledge and tools at hand",
     name: "Hanyu Zhu",
     role: "Firmware Engineer at Milwaukee Tool",
     image: "/uploads/testimonial-hanyu-zhu.jpg",
@@ -378,6 +377,7 @@ const testimonials: Testimonial[] = [
   {
     quote:
       "Syed helped me grow significantly as an EDP. His selfless mindset leads him always willing to lend a hand. No matter what type of question I have, Syed is always willing to listen and try his best to help me out. He is urgent and responsive and always willing to hop on a call. Even in situations where he may not know the answer directly, he always points me in the right direction. He also does a great job at explaining things for anyone to understand. On top of all of that, he carries a consistently positive attitude that energizes the workspace. I think Syed's contributed greatly to the one team mentality in the CHI office.",
+    highlight: "he always points me in the right direction",
     name: "Abby Haluska",
     role: "Firmware Engineer II at Milwaukee Tool",
     image: "/uploads/testimonial-abby-haluska.jpg",
@@ -604,16 +604,18 @@ function CircuitCanvas() {
 function Reveal({
   children,
   delay = 0,
+  className = "",
 }: {
   children: React.ReactNode;
   delay?: number;
+  className?: string;
 }) {
   const { ref, isVisible } = useInView<HTMLDivElement>();
 
   return (
     <div
       ref={ref}
-      className={`reveal ${isVisible ? "in" : ""}`}
+      className={`reveal ${isVisible ? "in" : ""} ${className}`.trim()}
       style={{ transitionDelay: `${delay}s` }}
     >
       {children}
@@ -656,8 +658,22 @@ function Hero({ totalCitations }: { totalCitations: number }) {
     });
   }, []);
 
+  const avatarParallax = useMemo(() => {
+    const dx = (mouse.x - 0.5) * 2;
+    const dy = (mouse.y - 0.5) * 2;
+
+    return {
+      halo: {
+        transform: `translate3d(${dx * 10}px, ${dy * 10}px, 0) scale(1.02)`,
+      },
+      orbit: {
+        transform: `translate3d(${dx * -6}px, ${dy * -6}px, 0)`,
+      },
+    };
+  }, [mouse.x, mouse.y]);
+
   const headline = useMemo(() => {
-    const text = "Platform engineering\nfrom silicon to cloud";
+    const text = "Firmware engineer with 4+ years\nbuilding production IoT platforms";
     const output: React.ReactNode[] = [];
     let visibleIndex = 0;
 
@@ -710,23 +726,11 @@ function Hero({ totalCitations }: { totalCitations: number }) {
       />
       <div className="hero-content">
         <div className="hero-avatar-stage">
-          <div className="hero-avatar-halo" />
-          <div className="hero-avatar-orbit" />
+          <div className="hero-avatar-halo" style={avatarParallax.halo} />
+          <div className="hero-avatar-orbit" style={avatarParallax.orbit} />
           <div className="hero-avatar-wrap">
             <img src="/uploads/avatar.webp" alt="Syed Raqueed" className="hero-avatar" />
           </div>
-          <div className="hero-float-card hero-float-card-right">
-            <span className="hero-float-label">Focus</span>
-            <strong>BSP & Firmware</strong>
-          </div>
-          <div className="hero-float-card hero-float-card-left">
-            <span className="hero-float-label">Platforms</span>
-            <strong>STM32 + Silicon Labs</strong>
-          </div>
-        </div>
-        <div className="hero-badge">
-          <span className="badge-dot" />
-          Open to opportunities
         </div>
         <h1 className="hero-title">{headline}</h1>
         <p className="hero-subline">
@@ -734,8 +738,9 @@ function Hero({ totalCitations }: { totalCitations: number }) {
           <span className="cursor" />
         </p>
         <p className="hero-supporting">
-          I build embedded firmware from the silicon up — BSP, device drivers, DMA controllers,
-          clock trees — and connect devices all the way to cloud-scale telemetry and validation.
+          I build BSPs, peripheral drivers, OTA flows, and connected-device firmware for STM32 and
+          Silicon Labs platforms across BLE, Cellular, GNSS, MQTT, and cloud telemetry. My
+          background also includes IEEE-published research in cyber-physical systems security.
         </p>
         <div className="hero-actions">
           <a href="#work" className="button button-primary">
@@ -767,33 +772,20 @@ function Hero({ totalCitations }: { totalCitations: number }) {
           <span>Validation</span>
           <span>Research</span>
         </div>
-      </div>
-      <div className="scroll-hint">
-        <span>scroll</span>
-        <div className="scroll-line" />
-      </div>
-    </section>
-  );
-}
-
-function Spotlights() {
-  return (
-    <section className="section page" id="about">
-      <SectionHeading
-        label="// areas"
-        title="Core Strengths"
-        subtitle="Where I focus most of my engineering energy"
-      />
-      <div className="spotlights">
-        {spotlights.map((item, index) => (
-          <Reveal key={item.title} delay={index * 0.1}>
-            <article className="spot-card">
-              <div className="mono-label">{item.label}</div>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-            </article>
-          </Reveal>
-        ))}
+        <div className="hero-socials">
+          <a href="https://linkedin.com/in/raqueed" target="_blank" rel="noreferrer" className="hero-social-badge" aria-label="LinkedIn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+            LinkedIn
+          </a>
+          <a href="https://github.com/crispypasta12" target="_blank" rel="noreferrer" className="hero-social-badge" aria-label="GitHub">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+            </svg>
+            GitHub
+          </a>
+        </div>
       </div>
     </section>
   );
@@ -813,42 +805,44 @@ function Highlights() {
   const active = highlights[activeIndex];
 
   return (
-    <section className="section page" id="work">
+    <section className="section page work-section" id="work">
       <SectionHeading
         label="// highlights"
         title="Signature Work"
         subtitle="A few focus areas the portfolio is built around"
       />
-      <Reveal>
-        <div className="carousel">
-          <article className="carousel-main">
-            <img key={active.image} src={active.image} alt={active.title} className="carousel-image" />
-            <div className="carousel-body">
-              <h3>{active.title}</h3>
-              <p>{active.blurb}</p>
-              <a href="#experience" className="inline-link">
-                See related experience
-              </a>
+      <ContainerScroll>
+        <div className="signature-scroll-content">
+          <div className="carousel">
+            <article className="carousel-main">
+              <img key={active.image} src={active.image} alt={active.title} className="carousel-image" />
+              <div className="carousel-body">
+                <h3>{active.title}</h3>
+                <p>{active.blurb}</p>
+                <a href="#experience" className="inline-link">
+                  See related experience
+                </a>
+              </div>
+            </article>
+            <div className="carousel-thumbs" role="tablist" aria-label="Work highlights">
+              {highlights.map((item, index) => (
+                <button
+                  key={item.title}
+                  type="button"
+                  className={`carousel-thumb ${index === activeIndex ? "is-active" : ""}`}
+                  onClick={() => setActiveIndex(index)}
+                >
+                  <img src={item.image} alt="" className="carousel-thumb-image" />
+                  <span className="carousel-thumb-body">
+                    <span className="carousel-thumb-title">{item.title}</span>
+                    <span className="carousel-thumb-text">{item.blurb}</span>
+                  </span>
+                </button>
+              ))}
             </div>
-          </article>
-          <div className="carousel-thumbs" role="tablist" aria-label="Work highlights">
-            {highlights.map((item, index) => (
-              <button
-                key={item.title}
-                type="button"
-                className={`carousel-thumb ${index === activeIndex ? "is-active" : ""}`}
-                onClick={() => setActiveIndex(index)}
-              >
-                <img src={item.image} alt="" className="carousel-thumb-image" />
-                <span className="carousel-thumb-body">
-                  <span className="carousel-thumb-title">{item.title}</span>
-                  <span className="carousel-thumb-text">{item.blurb}</span>
-                </span>
-              </button>
-            ))}
           </div>
         </div>
-      </Reveal>
+      </ContainerScroll>
     </section>
   );
 }
@@ -886,10 +880,12 @@ function TechCard({ card, delay }: { card: TechCardData; delay: number }) {
   };
 
   return (
-    <Reveal delay={delay}>
+    <Reveal delay={delay} className="tech-reveal">
       <article className="tech-card" ref={ref} onMouseMove={onMove} onMouseLeave={onLeave}>
-        <h3>{card.title}</h3>
-        <p>{card.description}</p>
+        <div className="tech-card-body">
+          <h3>{card.title}</h3>
+          <p>{card.description}</p>
+        </div>
         <div className="tag-row">
           {card.tags.map((tag) => (
             <span key={tag} className="tag">
@@ -904,23 +900,28 @@ function TechCard({ card, delay }: { card: TechCardData; delay: number }) {
 
 function TechStack() {
   return (
-    <section className="section page">
+    <section className="section page" id="about">
       <SectionHeading
         label="// stack"
         title="Tech Stack & Capabilities"
         subtitle="Tools, platforms, and protocols I work with most"
       />
-      <div className="tech-grid">
-        {techCards.map((card, index) => (
-          <TechCard key={card.title} card={card} delay={index * 0.08} />
-        ))}
+      <div className="techstack-split">
+        <div className="tech-orbit-wrap">
+          <OrbitingSkills />
+        </div>
+        <div className="tech-grid">
+          {techCards.map((card, index) => (
+            <TechCard key={card.title} card={card} delay={index * 0.08} />
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
 function Publications({ totalCitations }: { totalCitations: number }) {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   return (
     <section className="section page" id="publications">
@@ -952,7 +953,11 @@ function Publications({ totalCitations }: { totalCitations: number }) {
           const isOpen = expandedIndex === index;
           return (
             <Reveal key={publication.title} delay={index * 0.06}>
-              <article className={`publication-card ${isOpen ? "is-open" : ""}`}>
+              <article
+                className={`publication-card ${isOpen ? "is-open" : ""} ${
+                  publication.downloadUrl ? "has-download" : ""
+                }`}
+              >
                 <button
                   type="button"
                   className="publication-toggle"
@@ -961,7 +966,7 @@ function Publications({ totalCitations }: { totalCitations: number }) {
                   <span className="publication-main">
                     <span className="publication-copy">
                       <span className="publication-title">{publication.title}</span>
-                      <span className="publication-authors">{publication.authors}</span>
+                      <span className="publication-authors">{renderPublicationAuthors(publication.authors)}</span>
                       <span className="publication-meta">
                         {publication.venue} | {publication.location} | {publication.year}
                       </span>
@@ -977,6 +982,15 @@ function Publications({ totalCitations }: { totalCitations: number }) {
                     </span>
                   </span>
                 </button>
+                {publication.downloadUrl ? (
+                  <a
+                    href={publication.downloadUrl}
+                    download
+                    className="publication-download publication-download-persistent"
+                  >
+                    {publication.downloadLabel ?? "Download publication"}
+                  </a>
+                ) : null}
                 {isOpen ? (
                   <div className="publication-detail">
                     <p>{publication.abstract}</p>
@@ -1020,7 +1034,7 @@ function Experience() {
       <div className="experience-list">
         {experience.map((company, index) => (
           <Reveal key={company.company} delay={index * 0.1}>
-            <article className="experience-card">
+            <GlowCard as="article" className="experience-card" glowColor="amber" customSize>
               <header className="experience-header">
                 <div className="logo-shell logo-wide">
                   <img src={company.logo} alt={company.company} />
@@ -1050,7 +1064,7 @@ function Experience() {
                   </section>
                 ))}
               </div>
-            </article>
+            </GlowCard>
           </Reveal>
         ))}
       </div>
@@ -1064,15 +1078,23 @@ function Education() {
       <SectionHeading label="// academia" title="Education" />
       <div className="education-grid">
         {education.map((item, index) => (
-          <Reveal key={item.name} delay={index * 0.12}>
+          <Reveal key={item.name} delay={index * 0.12} className="education-reveal">
             <article className="education-card">
-              <div className="logo-shell">
-                <img src={item.logo} alt={item.name} />
+              <div className="education-accent" />
+              <div className="education-column">
+                <div className="logo-shell education-logo-shell">
+                  <img src={item.logo} alt={item.name} />
+                </div>
               </div>
-              <div>
-                <h3>{item.name}</h3>
-                <p className="education-degree">{item.degree}</p>
-                <p className="education-thesis">{item.thesis}</p>
+              <div className="education-card-body">
+                <div className="education-head">
+                  <h3>{item.name}</h3>
+                  <p className="education-degree">{item.degree}</p>
+                </div>
+                <div className="education-thesis-block">
+                  <span className="education-thesis-label">Thesis</span>
+                  <p className="education-thesis">{item.thesis.replace(/^Thesis:\s*/, "")}</p>
+                </div>
               </div>
             </article>
           </Reveal>
@@ -1105,6 +1127,22 @@ function Hobbies() {
   );
 }
 
+function HighlightedQuote({ quote, highlight }: { quote: string; highlight: string }) {
+  const start = quote.indexOf(highlight);
+
+  if (start === -1) {
+    return <>{quote}</>;
+  }
+
+  return (
+    <>
+      {quote.slice(0, start)}
+      <span className="testimonial-highlight">{highlight}</span>
+      {quote.slice(start + highlight.length)}
+    </>
+  );
+}
+
 function Testimonials() {
   const doubled = [...testimonials, ...testimonials];
 
@@ -1121,10 +1159,16 @@ function Testimonials() {
         <div className="testimonial-wrap">
           <div className="testimonial-track">
             {doubled.map((item, index) => (
-              <article key={`${item.name}-${index}`} className="testimonial-card">
+              <article
+                key={`${item.name}-${index}`}
+                className="testimonial-card"
+                style={{ animationDelay: `${(index % testimonials.length) * 0.08}s` }}
+              >
                 <img src={item.image} alt={item.name} className="testimonial-avatar" />
                 <div>
-                  <p className="testimonial-quote">&quot;{item.quote}&quot;</p>
+                  <p className="testimonial-quote">
+                    &quot;<HighlightedQuote quote={item.quote} highlight={item.highlight} />&quot;
+                  </p>
                   <p className="testimonial-name">
                     {item.name} | {item.role}
                   </p>
@@ -1145,10 +1189,6 @@ function CallToAction() {
         <div className="cta-card">
           <div className="cta-glow" />
           <div>
-            <div className="cta-badge">
-              <span className="badge-dot" />
-              Open to opportunities
-            </div>
             <h2>Looking for an embedded systems engineer who ships?</h2>
             <p>
               BSP development, device drivers, firmware from silicon to cloud — open to full-time
@@ -1197,38 +1237,30 @@ export function PortfolioPage() {
           <li>
             <a href="mailto:raqueed@outlook.com">Contact</a>
           </li>
-          <li>
-            <a href="https://linkedin.com/in/raqueed" target="_blank" rel="noreferrer" className="nav-linkedin" aria-label="LinkedIn">
-              LinkedIn
-            </a>
-          </li>
-          <li>
-            <a href="https://github.com/crispypasta12" target="_blank" rel="noreferrer" aria-label="GitHub">
-              GitHub
-            </a>
-          </li>
         </ul>
       </nav>
 
       <main>
         <Hero totalCitations={totalCitations} />
-        <div className="divider" />
-        <Spotlights />
-        <div className="divider" />
-        <Highlights />
-        <div className="divider" />
-        <TechStack />
-        <div className="divider" />
-        <Publications totalCitations={totalCitations} />
-        <div className="divider" />
-        <Experience />
-        <div className="divider" />
-        <Education />
-        <div className="divider" />
-        <Hobbies />
-        <div className="divider" />
-        <Testimonials />
-        <CallToAction />
+        <div className="post-hero-region">
+          <BGPattern variant="grid" mask="fade-y" size={34} fill="rgba(255, 255, 255, 0.055)" />
+          <div className="post-hero-content">
+            <div className="divider" />
+            <TechStack />
+            <div className="divider" />
+            <Highlights />
+            <div className="divider" />
+            <Experience />
+            <div className="divider" />
+            <Education />
+            <div className="divider" />
+            <Publications totalCitations={totalCitations} />
+            <div className="divider" />
+            <Hobbies />
+            <div className="divider" />
+            <Testimonials />
+          </div>
+        </div>
       </main>
 
       <footer className="footer">
