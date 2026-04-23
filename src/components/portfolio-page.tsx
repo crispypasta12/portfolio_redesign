@@ -14,6 +14,8 @@ type Highlight = {
   featured?: "dma-uart" | "test-framework" | "memory-map" | "ble-scan" | "iot-logger";
 };
 
+type ProjectThumbnailType = NonNullable<Highlight["featured"]>;
+
 type TechCardData = {
   title: string;
   description: string;
@@ -114,6 +116,236 @@ const highlights: Highlight[] = [
     featured: "memory-map",
   },
 ];
+
+function ProjectThumbnailVisual({ type, title }: { type?: ProjectThumbnailType; title: string }) {
+  const shouldReduceMotion = useReducedMotion();
+  const reduceMotion = Boolean(shouldReduceMotion);
+
+  if (!type) {
+    return null;
+  }
+
+  const idleGlow = reduceMotion
+    ? {}
+    : {
+        opacity: [0.72, 1, 0.78],
+        scale: [1, 1.015, 1],
+      };
+
+  return (
+    <span
+      className={`carousel-thumb-image project-thumbnail project-thumbnail--${type}`}
+      aria-hidden="true"
+      title={title}
+    >
+      <motion.span
+        className="project-thumbnail-core"
+        animate={idleGlow}
+        transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
+      >
+        {type === "iot-logger" ? (
+          <IotLoggerThumb reduceMotion={reduceMotion} />
+        ) : type === "dma-uart" ? (
+          <DmaUartThumb reduceMotion={reduceMotion} />
+        ) : type === "test-framework" ? (
+          <TestFrameworkThumb reduceMotion={reduceMotion} />
+        ) : type === "ble-scan" ? (
+          <BleScanThumb reduceMotion={reduceMotion} />
+        ) : (
+          <MemoryMapThumb reduceMotion={reduceMotion} />
+        )}
+      </motion.span>
+    </span>
+  );
+}
+
+function PacketPulse({
+  delay,
+  path,
+  reduceMotion,
+}: {
+  delay: number;
+  path: "horizontal" | "vertical" | "diagonal";
+  reduceMotion: boolean;
+}) {
+  const animate =
+    path === "horizontal"
+      ? { x: [-20, 20], opacity: [0, 1, 0] }
+      : path === "vertical"
+        ? { y: [-18, 18], opacity: [0, 1, 0] }
+        : { x: [-14, 15], y: [12, -13], opacity: [0, 1, 0] };
+
+  return (
+    <motion.circle
+      r="2.1"
+      cx="50"
+      cy="50"
+      className="project-thumbnail-pulse"
+      animate={reduceMotion ? { opacity: 0.68 } : animate}
+      transition={{ duration: 2.2, delay, repeat: Infinity, ease: "easeInOut" }}
+    />
+  );
+}
+
+function IotLoggerThumb({ reduceMotion }: { reduceMotion: boolean }) {
+  return (
+    <svg viewBox="0 0 100 100" className="project-thumbnail-svg">
+      <path className="project-thumbnail-line is-soft" d="M27 62 C27 41 39 38 45 38" />
+      <path className="project-thumbnail-line is-soft" d="M55 38 C65 28 75 30 79 39" />
+      <path className="project-thumbnail-line is-soft" d="M55 62 C66 68 73 62 78 52" />
+      <rect x="38" y="34" width="24" height="28" rx="5" className="project-thumbnail-fill" />
+      <rect x="43" y="40" width="14" height="16" rx="2" className="project-thumbnail-stroke" />
+      <path className="project-thumbnail-line" d="M30 62 H42 M58 38 H76 M58 62 H75" />
+      {[31, 38, 62, 69].map((x) => (
+        <line key={x} x1={x} y1="29" x2={x} y2="34" className="project-thumbnail-pin" />
+      ))}
+      <circle cx="26" cy="62" r="4" className="project-thumbnail-node" />
+      <circle cx="79" cy="39" r="4" className="project-thumbnail-node" />
+      <circle cx="78" cy="52" r="3" className="project-thumbnail-node is-dim" />
+      <PacketPulse delay={0} path="diagonal" reduceMotion={reduceMotion} />
+      <PacketPulse delay={1.05} path="horizontal" reduceMotion={reduceMotion} />
+    </svg>
+  );
+}
+
+function DmaUartThumb({ reduceMotion }: { reduceMotion: boolean }) {
+  const laneMotion = reduceMotion ? {} : { strokeDashoffset: [28, 0] };
+
+  return (
+    <svg viewBox="0 0 100 100" className="project-thumbnail-svg">
+      <rect x="38" y="32" width="24" height="36" rx="5" className="project-thumbnail-fill" />
+      <rect x="43" y="39" width="14" height="22" rx="2" className="project-thumbnail-stroke" />
+      {[31, 38, 62, 69].map((x) => (
+        <line key={x} x1={x} y1="27" x2={x} y2="32" className="project-thumbnail-pin" />
+      ))}
+      {[31, 38, 62, 69].map((x) => (
+        <line key={`${x}-b`} x1={x} y1="68" x2={x} y2="73" className="project-thumbnail-pin" />
+      ))}
+      <motion.path
+        className="project-thumbnail-line"
+        d="M18 42 H38 M62 42 H82 M82 58 H62 M38 58 H18"
+        strokeDasharray="7 7"
+        animate={laneMotion}
+        transition={{ duration: 1.7, repeat: Infinity, ease: "linear" }}
+      />
+      <path className="project-thumbnail-arrow" d="M77 37 L83 42 L77 47" />
+      <path className="project-thumbnail-arrow" d="M23 53 L17 58 L23 63" />
+      <PacketPulse delay={0.15} path="horizontal" reduceMotion={reduceMotion} />
+      <PacketPulse delay={1.05} path="horizontal" reduceMotion={reduceMotion} />
+    </svg>
+  );
+}
+
+function TestFrameworkThumb({ reduceMotion }: { reduceMotion: boolean }) {
+  return (
+    <svg viewBox="0 0 100 100" className="project-thumbnail-svg">
+      <rect x="31" y="25" width="34" height="50" rx="6" className="project-thumbnail-fill" />
+      <path className="project-thumbnail-stroke" d="M40 25 H56 M39 40 H58 M39 54 H58 M39 67 H52" />
+      <motion.path
+        className="project-thumbnail-check"
+        d="M27 43 L32 48 L42 36"
+        initial={false}
+        animate={reduceMotion ? { pathLength: 1, opacity: 0.9 } : { pathLength: [0, 1, 1], opacity: [0, 1, 0.72] }}
+        transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.path
+        className="project-thumbnail-check"
+        d="M27 63 L32 68 L42 56"
+        initial={false}
+        animate={reduceMotion ? { pathLength: 1, opacity: 0.72 } : { pathLength: [0, 1, 1], opacity: [0, 0.9, 0.62] }}
+        transition={{ duration: 2.8, delay: 0.55, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.g
+        className="project-thumbnail-gear"
+        style={{ originX: "71px", originY: "61px" }}
+        animate={reduceMotion ? {} : { rotate: 360 }}
+        transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+      >
+        <circle cx="71" cy="61" r="10" className="project-thumbnail-stroke" />
+        <circle cx="71" cy="61" r="3" className="project-thumbnail-node" />
+        {[0, 45, 90, 135].map((angle) => (
+          <line
+            key={angle}
+            x1="71"
+            y1="47"
+            x2="71"
+            y2="52"
+            className="project-thumbnail-pin"
+            transform={`rotate(${angle} 71 61)`}
+          />
+        ))}
+      </motion.g>
+      <motion.line
+        x1="28"
+        y1="31"
+        x2="70"
+        y2="31"
+        className="project-thumbnail-scan"
+        animate={reduceMotion ? { opacity: 0.32 } : { y: [0, 35, 0], opacity: [0, 0.7, 0] }}
+        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </svg>
+  );
+}
+
+function BleScanThumb({ reduceMotion }: { reduceMotion: boolean }) {
+  const ringMotion = reduceMotion
+    ? { opacity: 0.34, scale: 1 }
+    : { opacity: [0, 0.62, 0], scale: [0.72, 1.18, 1.38] };
+
+  return (
+    <svg viewBox="0 0 100 100" className="project-thumbnail-svg">
+      <circle cx="50" cy="53" r="5" className="project-thumbnail-node" />
+      {[20, 31, 42].map((radius) => (
+        <circle key={radius} cx="50" cy="53" r={radius} className="project-thumbnail-ring" />
+      ))}
+      <motion.circle
+        cx="50"
+        cy="53"
+        r="22"
+        className="project-thumbnail-scan-ring"
+        animate={ringMotion}
+        transition={{ duration: 2.6, delay: 0.2, repeat: Infinity, ease: "easeOut" }}
+      />
+      <path className="project-thumbnail-line" d="M50 53 L69 37" />
+      <motion.circle
+        cx="70"
+        cy="36"
+        r="3.6"
+        className="project-thumbnail-pulse"
+        animate={reduceMotion ? { opacity: 0.76 } : { opacity: [0.25, 1, 0.35], scale: [1, 1.35, 1] }}
+        transition={{ duration: 1.9, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <path className="project-thumbnail-arrow is-soft" d="M44 31 C48 27 53 27 57 31" />
+      <path className="project-thumbnail-arrow is-soft" d="M36 24 C44 16 56 16 64 24" />
+    </svg>
+  );
+}
+
+function MemoryMapThumb({ reduceMotion }: { reduceMotion: boolean }) {
+  return (
+    <svg viewBox="0 0 100 100" className="project-thumbnail-svg">
+      <path className="project-thumbnail-line is-soft" d="M50 31 V69 M31 51 H69 M31 69 H69" />
+      <rect x="34" y="22" width="32" height="17" rx="5" className="project-thumbnail-fill" />
+      <rect x="25" y="45" width="24" height="15" rx="4" className="project-thumbnail-stroke" />
+      <rect x="51" y="45" width="24" height="15" rx="4" className="project-thumbnail-stroke" />
+      <rect x="25" y="66" width="24" height="14" rx="4" className="project-thumbnail-stroke" />
+      <rect x="51" y="66" width="24" height="14" rx="4" className="project-thumbnail-stroke" />
+      {[50, 37, 63, 37, 63].map((cx, index) => (
+        <motion.circle
+          key={`${cx}-${index}`}
+          cx={cx}
+          cy={index === 0 ? 31 : index < 3 ? 52 : 73}
+          r="2.4"
+          className="project-thumbnail-node"
+          animate={reduceMotion ? { opacity: 0.75 } : { opacity: [0.35, 1, 0.45], scale: [1, 1.28, 1] }}
+          transition={{ duration: 2.4, delay: index * 0.28, repeat: Infinity, ease: "easeInOut" }}
+        />
+      ))}
+      <PacketPulse delay={0.3} path="vertical" reduceMotion={reduceMotion} />
+    </svg>
+  );
+}
 
 const techCards: TechCardData[] = [
   {
@@ -2066,7 +2298,7 @@ function Highlights() {
                   onClick={() => selectHighlight(index)}
                   onDragStart={(event) => event.preventDefault()}
                 >
-                  <img src={item.image} alt="" className="carousel-thumb-image" draggable={false} />
+                  <ProjectThumbnailVisual type={item.featured} title={item.title} />
                   <span className="carousel-thumb-body">
                     <span className="carousel-thumb-title">{item.title}</span>
                     <span className="carousel-thumb-text">{item.blurb}</span>

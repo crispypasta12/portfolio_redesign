@@ -908,6 +908,224 @@ img {
   -webkit-user-drag: none;
 }
 
+.project-thumbnail {
+  --thumb-accent: 202, 151, 74;
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(var(--thumb-accent), 0.16), transparent 48%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.018) 58%),
+    #080b12;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--thumb-accent), 0.12),
+    inset 0 -18px 36px rgba(0, 0, 0, 0.32);
+}
+
+.project-thumbnail::before,
+.project-thumbnail::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.project-thumbnail::before {
+  background:
+    linear-gradient(90deg, transparent, rgba(var(--thumb-accent), 0.09), transparent),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 9px);
+  opacity: 0.36;
+  transform: translateX(-18%);
+  transition: opacity 0.25s ease, transform 0.35s ease;
+}
+
+.project-thumbnail::after {
+  inset: 10px;
+  border-radius: 999px;
+  background: rgba(var(--thumb-accent), 0.14);
+  filter: blur(16px);
+  opacity: 0.52;
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+.project-thumbnail--iot-logger {
+  --thumb-accent: 214, 159, 74;
+}
+
+.project-thumbnail--dma-uart {
+  --thumb-accent: 91, 159, 222;
+}
+
+.project-thumbnail--test-framework {
+  --thumb-accent: 93, 199, 166;
+}
+
+.project-thumbnail--ble-scan {
+  --thumb-accent: 163, 118, 226;
+}
+
+.project-thumbnail--memory-map {
+  --thumb-accent: 217, 105, 167;
+}
+
+.project-thumbnail-core {
+  width: min(48px, 78%);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  color: rgb(var(--thumb-accent));
+  filter:
+    drop-shadow(0 0 8px rgba(var(--thumb-accent), 0.28))
+    drop-shadow(0 0 18px rgba(var(--thumb-accent), 0.12));
+  transform-origin: center;
+  transition: color 0.25s ease, filter 0.25s ease;
+}
+
+.project-thumbnail-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.project-thumbnail-fill,
+.project-thumbnail-stroke,
+.project-thumbnail-line,
+.project-thumbnail-pin,
+.project-thumbnail-node,
+.project-thumbnail-ring,
+.project-thumbnail-scan-ring,
+.project-thumbnail-arrow,
+.project-thumbnail-check,
+.project-thumbnail-scan {
+  vector-effect: non-scaling-stroke;
+}
+
+.project-thumbnail-fill {
+  fill: rgba(var(--thumb-accent), 0.105);
+  stroke: rgba(var(--thumb-accent), 0.82);
+  stroke-width: 1.7;
+}
+
+.project-thumbnail-stroke {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.62);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.project-thumbnail-line {
+  fill: none;
+  stroke: rgba(var(--thumb-accent), 0.72);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.55;
+}
+
+.project-thumbnail-line.is-soft,
+.project-thumbnail-arrow.is-soft {
+  opacity: 0.54;
+}
+
+.project-thumbnail-pin {
+  stroke: rgba(255, 255, 255, 0.42);
+  stroke-linecap: round;
+  stroke-width: 1.45;
+}
+
+.project-thumbnail-node,
+.project-thumbnail-pulse {
+  fill: rgb(var(--thumb-accent));
+}
+
+.project-thumbnail-node {
+  filter: drop-shadow(0 0 7px rgba(var(--thumb-accent), 0.45));
+}
+
+.project-thumbnail-node.is-dim {
+  opacity: 0.58;
+}
+
+.project-thumbnail-pulse {
+  filter: drop-shadow(0 0 7px rgba(var(--thumb-accent), 0.72));
+}
+
+.project-thumbnail-arrow,
+.project-thumbnail-check {
+  fill: none;
+  stroke: rgb(var(--thumb-accent));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
+.project-thumbnail-ring {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 1.2;
+}
+
+.project-thumbnail-scan-ring {
+  fill: none;
+  stroke: rgba(var(--thumb-accent), 0.78);
+  stroke-width: 1.45;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.project-thumbnail-scan {
+  stroke: rgba(var(--thumb-accent), 0.76);
+  stroke-linecap: round;
+  stroke-width: 1.5;
+}
+
+.project-thumbnail-gear {
+  transform-box: view-box;
+  transform-origin: 71px 61px;
+}
+
+.carousel-thumb:hover .project-thumbnail,
+.carousel-thumb.is-active .project-thumbnail {
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--thumb-accent), 0.22),
+    inset 0 -18px 36px rgba(0, 0, 0, 0.26),
+    0 0 28px rgba(var(--thumb-accent), 0.16);
+}
+
+.carousel-thumb:hover .project-thumbnail::before,
+.carousel-thumb.is-active .project-thumbnail::before {
+  opacity: 0.56;
+  transform: translateX(12%);
+}
+
+.carousel-thumb:hover .project-thumbnail::after,
+.carousel-thumb.is-active .project-thumbnail::after {
+  opacity: 0.78;
+  filter: blur(18px);
+}
+
+.carousel-thumb:hover .project-thumbnail-core,
+.carousel-thumb.is-active .project-thumbnail-core {
+  filter:
+    drop-shadow(0 0 10px rgba(var(--thumb-accent), 0.42))
+    drop-shadow(0 0 24px rgba(var(--thumb-accent), 0.18));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-thumbnail::before {
+    transform: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .project-thumbnail-core {
+    transition: filter 0.25s ease;
+  }
+}
+
 .carousel-thumb-body {
   display: grid;
   gap: 4px;
