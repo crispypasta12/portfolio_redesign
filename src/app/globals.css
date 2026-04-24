@@ -5012,23 +5012,24 @@ img {
   }
 
   .container-scroll-stage {
-    height: 64rem;
-    margin-top: -28px;
+    height: auto;
+    margin-top: 0;
     padding-bottom: 24px;
   }
 
   .work-section .container-scroll-stage {
-    height: 52rem;
+    height: auto;
     margin-top: 0;
     padding-bottom: 8px;
   }
 
   .container-scroll-perspective {
-    padding: 48px 0;
+    padding: 16px 0;
   }
 
   .container-scroll-card {
-    height: 44rem;
+    height: auto;
+    min-height: 44rem;
     padding: 8px;
     border-width: 3px;
     border-radius: 24px;
@@ -5040,13 +5041,11 @@ img {
   }
 
   .signature-scroll-content {
-    min-height: 100%;
     padding: 14px;
   }
 
   .signature-scroll-content .carousel {
     height: auto;
-    min-height: 100%;
     grid-template-columns: 1fr;
   }
 
@@ -5229,15 +5228,16 @@ img {
   }
 
   .container-scroll-stage {
-    height: 58rem;
+    height: auto;
   }
 
   .work-section .container-scroll-stage {
-    height: 48rem;
+    height: auto;
   }
 
   .container-scroll-card {
-    height: 41rem;
+    height: auto;
+    min-height: 38rem;
   }
 
   .signature-scroll-content {

@@ -18,32 +18,30 @@ export function ContainerScroll({
   const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsMobile(event.matches);
     };
 
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
+    setIsMobile(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
 
     return () => {
-      window.removeEventListener("resize", checkMobile);
+      mediaQuery.removeEventListener("change", handleChange);
     };
   }, []);
 
-  const scaleDimensions = () => {
-    return isMobile ? [0.7, 0.9] : [1.05, 1];
-  };
-
-  const rotate = useTransform(scrollYProgress, [0, 1], [20, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], scaleDimensions());
-  const translate = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const rotate = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [20, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], isMobile ? [1, 1] : [1.05, 1]);
+  const translate = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [0, -100]);
 
   return (
     <div className="container-scroll-stage" ref={containerRef}>
       <div
         className="container-scroll-perspective"
         style={{
-          perspective: "1000px",
+          perspective: isMobile ? "none" : "1000px",
         }}
       >
         {titleComponent ? <Header translate={translate} titleComponent={titleComponent} /> : null}
