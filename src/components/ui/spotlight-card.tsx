@@ -20,7 +20,6 @@ interface GlowCardProps extends Omit<HTMLAttributes<HTMLElement>, "children" | "
   width?: string | number;
   height?: string | number;
   customSize?: boolean;
-  as?: "div" | "article" | "section";
   as?: ElementType;
 }
 
