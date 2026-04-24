@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, memo } from "react";
+import { useEffect, useRef, useState, memo, forwardRef, useCallback } from "react";
 
 type SkillId = "c" | "cpp" | "python" | "arm" | "freertos" | "aws" | "stm32" | "esp32" | "nrf52";
 
@@ -173,16 +173,17 @@ const ICONS: Record<SkillId, () => React.JSX.Element> = {
   ),
 };
 
+// Middle ring offset by π/6, outer ring offset by π/4 — breaks the rigid 3-aligned column effect
 const skillsConfig: SkillConfig[] = [
-  { id: "c",        orbitRadius: 92,  size: 44, speed:  0.55, phaseShift: 0,                   label: "C",            color: "#A8B9CC" },
-  { id: "cpp",      orbitRadius: 92,  size: 44, speed:  0.55, phaseShift: (2 * Math.PI) / 3,   label: "C++",          color: "#00599C" },
-  { id: "python",   orbitRadius: 92,  size: 44, speed:  0.55, phaseShift: (4 * Math.PI) / 3,   label: "Python",       color: "#3776AB" },
-  { id: "arm",      orbitRadius: 158, size: 48, speed: -0.35, phaseShift: 0,                   label: "ARM Cortex-M", color: "#0091BD" },
-  { id: "freertos", orbitRadius: 158, size: 48, speed: -0.35, phaseShift: (2 * Math.PI) / 3,   label: "FreeRTOS",     color: "#D2820A" },
-  { id: "aws",      orbitRadius: 158, size: 48, speed: -0.35, phaseShift: (4 * Math.PI) / 3,   label: "AWS IoT",      color: "#FF9900" },
-  { id: "stm32",    orbitRadius: 215, size: 44, speed:  0.20, phaseShift: 0,                   label: "STM32",        color: "#0099E0" },
-  { id: "esp32",    orbitRadius: 215, size: 44, speed:  0.20, phaseShift: (2 * Math.PI) / 3,   label: "ESP32",        color: "#E7332A" },
-  { id: "nrf52",    orbitRadius: 215, size: 44, speed:  0.20, phaseShift: (4 * Math.PI) / 3,   label: "nRF52",        color: "#00A9E0" },
+  { id: "c",        orbitRadius: 92,  size: 44, speed:  0.55, phaseShift: 0,                                      label: "C",            color: "#A8B9CC" },
+  { id: "cpp",      orbitRadius: 92,  size: 44, speed:  0.55, phaseShift: (2 * Math.PI) / 3,                      label: "C++",          color: "#00599C" },
+  { id: "python",   orbitRadius: 92,  size: 44, speed:  0.55, phaseShift: (4 * Math.PI) / 3,                      label: "Python",       color: "#3776AB" },
+  { id: "arm",      orbitRadius: 158, size: 48, speed: -0.38, phaseShift: Math.PI / 6,                            label: "ARM Cortex-M", color: "#0091BD" },
+  { id: "freertos", orbitRadius: 158, size: 48, speed: -0.38, phaseShift: Math.PI / 6 + (2 * Math.PI) / 3,       label: "FreeRTOS",     color: "#D2820A" },
+  { id: "aws",      orbitRadius: 158, size: 48, speed: -0.38, phaseShift: Math.PI / 6 + (4 * Math.PI) / 3,       label: "AWS IoT",      color: "#FF9900" },
+  { id: "stm32",    orbitRadius: 215, size: 44, speed:  0.22, phaseShift: Math.PI / 4,                            label: "STM32",        color: "#0099E0" },
+  { id: "esp32",    orbitRadius: 215, size: 44, speed:  0.22, phaseShift: Math.PI / 4 + (2 * Math.PI) / 3,       label: "ESP32",        color: "#E7332A" },
+  { id: "nrf52",    orbitRadius: 215, size: 44, speed:  0.22, phaseShift: Math.PI / 4 + (4 * Math.PI) / 3,       label: "nRF52",        color: "#00A9E0" },
 ];
 
 const OrbitRing = memo(({ radius, delay = 0 }: { radius: number; delay?: number }) => (
@@ -204,89 +205,140 @@ const OrbitRing = memo(({ radius, delay = 0 }: { radius: number; delay?: number 
 ));
 OrbitRing.displayName = "OrbitRing";
 
-const SkillNode = memo(({ config, angle }: { config: SkillConfig; angle: number }) => {
-  const [hovered, setHovered] = useState(false);
-  const x = Number((Math.cos(angle) * config.orbitRadius).toFixed(3));
-  const y = Number((Math.sin(angle) * config.orbitRadius).toFixed(3));
-  const Icon = ICONS[config.id];
+interface SkillNodeProps {
+  config: SkillConfig;
+  posObj: { x: number; y: number };
+  mountDelay: number;
+  onHoverChange: (active: boolean) => void;
+}
 
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        width: `${config.size}px`,
-        height: `${config.size}px`,
-        transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
-        zIndex: hovered ? 20 : 10,
-        cursor: "pointer",
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+const SkillNode = memo(
+  forwardRef<HTMLDivElement, SkillNodeProps>(({ config, posObj, mountDelay, onHoverChange }, ref) => {
+    const [hovered, setHovered] = useState(false);
+    const [tooltipAbove, setTooltipAbove] = useState(false);
+    const Icon = ICONS[config.id];
+
+    const activate = useCallback(() => {
+      setTooltipAbove(posObj.y > 0);
+      setHovered(true);
+      onHoverChange(true);
+    }, [posObj, onHoverChange]);
+
+    const deactivate = useCallback(() => {
+      setHovered(false);
+      onHoverChange(false);
+    }, [onHoverChange]);
+
+    return (
       <div
+        ref={ref}
         style={{
-          width: "100%",
-          height: "100%",
-          padding: "9px",
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.04)",
-          border: `1px solid ${hovered ? `${config.color}55` : "rgba(255,255,255,0.09)"}`,
-          boxShadow: hovered
-            ? `0 0 24px ${config.color}44, 0 0 48px ${config.color}22`
-            : "0 4px 20px rgba(0,0,0,0.3)",
-          transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
-          transform: hovered ? "scale(1.25)" : "scale(1)",
-          backdropFilter: "blur(8px)",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          width: `${config.size}px`,
+          height: `${config.size}px`,
+          transform: "translate(-50%, -50%)",
+          zIndex: hovered ? 20 : 10,
+          cursor: "pointer",
+          opacity: 0,
+          animation: `orbit-node-fade-in 0.5s ease ${mountDelay}ms forwards`,
         }}
+        onMouseEnter={activate}
+        onMouseLeave={deactivate}
+        onTouchStart={activate}
+        onTouchEnd={deactivate}
       >
-        <Icon />
-      </div>
-      {hovered && (
         <div
           style={{
-            position: "absolute",
-            bottom: "-28px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            padding: "3px 8px",
-            background: "rgba(8,10,16,0.92)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "6px",
-            color: "#fff",
-            fontSize: "0.68rem",
-            whiteSpace: "nowrap",
-            pointerEvents: "none",
-            fontFamily: '"JetBrains Mono", monospace',
-            backdropFilter: "blur(8px)",
+            width: "100%",
+            height: "100%",
+            animation: `orbit-node-scale-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${mountDelay}ms both`,
           }}
         >
-          {config.label}
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              padding: "9px",
+              borderRadius: "50%",
+              background: "rgba(255,255,255,0.04)",
+              border: `1px solid ${hovered ? `${config.color}55` : "rgba(255,255,255,0.09)"}`,
+              boxShadow: hovered
+                ? `0 0 24px ${config.color}44, 0 0 48px ${config.color}22`
+                : "0 4px 20px rgba(0,0,0,0.3)",
+              transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
+              transform: hovered ? "scale(1.25)" : "scale(1)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <Icon />
+          </div>
         </div>
-      )}
-    </div>
-  );
-});
+        {hovered && (
+          <div
+            style={{
+              position: "absolute",
+              ...(tooltipAbove ? { bottom: "calc(100% + 4px)" } : { top: "calc(100% + 4px)" }),
+              left: "50%",
+              transform: "translateX(-50%)",
+              padding: "3px 8px",
+              background: "rgba(8,10,16,0.92)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "6px",
+              color: "#fff",
+              fontSize: "0.68rem",
+              whiteSpace: "nowrap",
+              pointerEvents: "none",
+              fontFamily: '"JetBrains Mono", monospace',
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            {config.label}
+          </div>
+        )}
+      </div>
+    );
+  })
+);
 SkillNode.displayName = "SkillNode";
 
 export function OrbitingSkills() {
-  const [time, setTime] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const timeRef = useRef(0);
+  const pausedRef = useRef(false);
+  const nodeRefs = useRef<(HTMLDivElement | null)[]>(new Array(skillsConfig.length).fill(null));
+  const posObjs = useRef<Array<{ x: number; y: number }>>(skillsConfig.map(() => ({ x: 0, y: 0 })));
   const [orbitScale, setOrbitScale] = useState(1);
 
+  const handleHoverChange = useCallback((active: boolean) => {
+    pausedRef.current = active;
+  }, []);
+
   useEffect(() => {
-    if (paused) return;
-    let id: number;
+    let rafId: number;
     let last = performance.now();
     const tick = (now: number) => {
-      setTime((t) => t + (now - last) / 1000);
+      if (!pausedRef.current) {
+        timeRef.current += (now - last) / 1000;
+      }
       last = now;
-      id = requestAnimationFrame(tick);
+      skillsConfig.forEach((config, i) => {
+        const angle = timeRef.current * config.speed + config.phaseShift;
+        const x = Math.cos(angle) * config.orbitRadius;
+        const y = Math.sin(angle) * config.orbitRadius;
+        const pos = posObjs.current[i];
+        pos.x = x;
+        pos.y = y;
+        const el = nodeRefs.current[i];
+        if (el) {
+          el.style.transform = `translate(-50%, -50%) translate(${x.toFixed(2)}px, ${y.toFixed(2)}px)`;
+        }
+      });
+      rafId = requestAnimationFrame(tick);
     };
-    id = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(id);
-  }, [paused]);
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   useEffect(() => {
     const updateOrbitScale = () => {
@@ -301,13 +353,7 @@ export function OrbitingSkills() {
   }, []);
 
   return (
-    <div
-      style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onTouchStart={() => setPaused(true)}
-      onTouchEnd={() => setPaused(false)}
-    >
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
       <div style={{ position: "relative", width: "min(480px, calc(100vw - 64px))", aspectRatio: "1 / 1" }}>
         <div
           style={{
@@ -384,13 +430,21 @@ export function OrbitingSkills() {
           </svg>
         </div>
 
-        {skillsConfig.map((config) => (
-          <SkillNode
-            key={config.id}
-            config={config}
-            angle={time * config.speed + config.phaseShift}
-          />
-        ))}
+        {skillsConfig.map((config, i) => {
+          const ringBase = config.orbitRadius === 92 ? 150 : config.orbitRadius === 158 ? 380 : 610;
+          const withinRingIndex = Math.round(config.phaseShift / ((2 * Math.PI) / 3));
+          const mountDelay = ringBase + withinRingIndex * 80;
+          return (
+            <SkillNode
+              key={config.id}
+              ref={(el) => { nodeRefs.current[i] = el; }}
+              config={config}
+              posObj={posObjs.current[i]}
+              mountDelay={mountDelay}
+              onHoverChange={handleHoverChange}
+            />
+          );
+        })}
         </div>
       </div>
     </div>

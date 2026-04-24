@@ -21,6 +21,7 @@ interface GlowCardProps extends Omit<HTMLAttributes<HTMLElement>, "children" | "
   height?: string | number;
   customSize?: boolean;
   as?: "div" | "article" | "section";
+  as?: ElementType;
 }
 
 const glowColorMap: Record<GlowColor, { glow: string; border: string }> = {

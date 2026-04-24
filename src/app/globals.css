@@ -4013,6 +4013,61 @@ img {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
     var(--card-solid);
+  position: relative;
+  overflow: hidden;
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s ease;
+}
+
+.publication-stats > div:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(210, 140, 0, 0.1);
+}
+
+.publication-stats > div::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    108deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.045) 50%,
+    transparent 62%
+  );
+  background-size: 260% 100%;
+  background-position: 160% 0;
+  pointer-events: none;
+  z-index: 3;
+  border-radius: inherit;
+}
+
+.publication-stats > div:hover::before {
+  animation: pub-card-shimmer 0.7s ease forwards;
+}
+
+.publication-stats > div::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 0%;
+  background: linear-gradient(
+    180deg,
+    rgba(210, 140, 0, 0.75),
+    rgba(210, 140, 0, 0.1)
+  );
+  transition: height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.publication-stats > div:hover::after {
+  height: 100%;
 }
 
 .publication-stat-number {
@@ -4045,6 +4100,62 @@ img {
 .publication-card {
   position: relative;
   overflow: hidden;
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s ease;
+}
+
+.publication-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(210, 140, 0, 0.1);
+}
+
+/* diagonal shimmer that sweeps across once per hover */
+.publication-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    108deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.045) 50%,
+    transparent 62%
+  );
+  background-size: 260% 100%;
+  background-position: 160% 0;
+  pointer-events: none;
+  z-index: 3;
+  border-radius: inherit;
+}
+
+.publication-card:hover::before {
+  animation: pub-card-shimmer 0.7s ease forwards;
+}
+
+/* amber left bar that draws in from top */
+.publication-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 0%;
+  background: linear-gradient(
+    180deg,
+    rgba(210, 140, 0, 0.75),
+    rgba(210, 140, 0, 0.1)
+  );
+  transition: height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.publication-card:hover::after,
+.publication-card.is-open::after {
+  height: 100%;
 }
 
 .publication-card.is-open {
@@ -4536,10 +4647,33 @@ img {
   overflow: hidden;
   border-radius: 18px;
   opacity: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
+    var(--card-solid);
   transition:
     transform 220ms ease,
     border-color 220ms ease,
     box-shadow 220ms ease;
+}
+
+/* ambient amber glow rises from the bottom on hover — only meaningful against solid bg */
+.testimonial-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 90% 55% at 50% 120%,
+    rgba(245, 158, 11, 0.1),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 400ms ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.testimonial-card:hover::after {
+  opacity: 1;
 }
 
 .testimonial-card::before {
@@ -4616,6 +4750,11 @@ img {
 .testimonial-name {
   margin: 0;
   font-size: 0.84rem;
+  transition: color 220ms ease;
+}
+
+.testimonial-card:hover .testimonial-name {
+  color: var(--accent);
 }
 
 .cta-card {
@@ -4777,6 +4916,21 @@ img {
 @keyframes orbit-pulse {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
+}
+
+@keyframes orbit-node-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes orbit-node-scale-in {
+  from { transform: scale(0.55); }
+  to   { transform: scale(1); }
+}
+
+@keyframes pub-card-shimmer {
+  from { background-position: 160% 0; }
+  to   { background-position: -60% 0; }
 }
 
 @keyframes image-fade {
@@ -5554,6 +5708,7 @@ img {
   *,
   *::before,
   *::after {
+    animation-delay: 0s !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

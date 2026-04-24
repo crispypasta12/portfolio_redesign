@@ -72,13 +72,15 @@ const typedPhrases = [
   "STM32 | Silicon Labs | FreeRTOS | BLE | AWS IoT",
 ];
 
-const sectionIds = ["hero", "about", "work", "publications", "experience"];
+const sectionIds = ["hero", "work", "experience", "about", "publications", "hobbies", "contact"];
 const navItems = [
   ["hero", "Home"],
   ["work", "Work"],
   ["publications", "Research"],
   ["experience", "Experience"],
   ["about", "About"],
+  ["hobbies", "Hobbies & Life"],
+  ["contact", "Contact"],
 ] as const;
 
 const highlights: Highlight[] = [
@@ -697,30 +699,21 @@ function useActiveSection(ids: string[]) {
   const [active, setActive] = useState(ids[0]);
 
   useEffect(() => {
-    const elements = ids
-      .map((id) => document.getElementById(id))
-      .filter((value): value is HTMLElement => Boolean(value));
-
-    if (!elements.length) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-        if (visible[0]?.target.id) {
-          setActive(visible[0].target.id);
+    const update = () => {
+      const triggerPoint = window.scrollY + window.innerHeight * 0.35;
+      let current = ids[0];
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (el && el.offsetTop <= triggerPoint) {
+          current = id;
         }
-      },
-      {
-        rootMargin: "-35% 0px -45% 0px",
-        threshold: [0.2, 0.35, 0.5, 0.7],
-      },
-    );
+      }
+      setActive(current);
+    };
 
-    elements.forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+    return () => window.removeEventListener("scroll", update);
   }, [ids]);
 
   return active;
@@ -2579,7 +2572,7 @@ function Education() {
 
 function Hobbies() {
   return (
-    <section className="section page">
+    <section className="section page" id="hobbies">
       <SectionHeading
         label="// life"
         title="Hobbies & Life"
@@ -2657,7 +2650,7 @@ function Testimonials() {
 
 function CallToAction() {
   return (
-    <section className="section page">
+    <section className="section page" id="contact">
       <Reveal>
         <div className="cta-card">
           <div className="cta-glow" />
@@ -2718,9 +2711,6 @@ export function PortfolioPage() {
               </a>
             </li>
           ))}
-          <li>
-            <a href="mailto:raqueed@outlook.com">Contact</a>
-          </li>
         </ul>
         <button
           type="button"
@@ -2741,9 +2731,6 @@ export function PortfolioPage() {
               {label}
             </a>
           ))}
-          <a href="mailto:raqueed@outlook.com" onClick={closeMobileNav}>
-            Contact
-          </a>
         </div>
       </nav>
 
@@ -2763,9 +2750,11 @@ export function PortfolioPage() {
             <div className="divider" />
             <Publications totalCitations={totalCitations} />
             <div className="divider" />
+            <Testimonials />
+            <div className="divider" />
             <Hobbies />
             <div className="divider" />
-            <Testimonials />
+            <CallToAction />
           </div>
         </div>
       </main>
