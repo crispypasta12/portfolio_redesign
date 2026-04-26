@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { BGPattern } from "@/components/ui/bg-pattern";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
+import { GlassEffect, GlassFilter } from "@/components/ui/liquid-glass";
 import { GlowCard } from "@/components/ui/spotlight-card";
-import { OrbitingSkills } from "./orbiting-skills";
+import RadialOrbitalTimeline, { type RadialTimelineItem } from "@/components/ui/radial-orbital-timeline";
 
 type Highlight = {
   title: string;
@@ -76,22 +77,14 @@ const sectionIds = ["hero", "work", "experience", "about", "publications", "hobb
 const navItems = [
   ["hero", "Home"],
   ["work", "Work"],
-  ["publications", "Research"],
   ["experience", "Experience"],
   ["about", "About"],
+  ["publications", "Research"],
   ["hobbies", "Hobbies & Life"],
   ["contact", "Contact"],
 ] as const;
 
 const highlights: Highlight[] = [
-  {
-    title: "IoT Data Logger",
-    blurb:
-      "End-to-end BLE, local buffering, cellular upload, and AWS ingestion architecture for resilient device-to-cloud data delivery.",
-    image:
-      "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF1714",
-    featured: "iot-logger",
-  },
   {
     title: "DMA-Based UART Passthrough System",
     blurb:
@@ -99,14 +92,6 @@ const highlights: Highlight[] = [
     image:
       "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF5843",
     featured: "dma-uart",
-  },
-  {
-    title: "Automated Test Framework",
-    blurb:
-      "PyTest and Jenkins test infrastructure for BLE, cellular, and hardware-integrated embedded validation.",
-    image:
-      "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Tennessee/DSCF4775",
-    featured: "test-framework",
   },
   {
     title: "BLE Scan-Only Mode & Stack Integration",
@@ -117,7 +102,23 @@ const highlights: Highlight[] = [
     featured: "ble-scan",
   },
   {
-    title: "Memory Map Intelligence Platform",
+    title: "IoT Data Logger",
+    blurb:
+      "End-to-end BLE, local buffering, cellular upload, and AWS ingestion architecture for resilient device-to-cloud data delivery.",
+    image:
+      "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Chicago/DSCF1714",
+    featured: "iot-logger",
+  },
+  {
+    title: "Automated Test Framework",
+    blurb:
+      "PyTest and Jenkins test infrastructure for BLE, cellular, and hardware-integrated embedded validation.",
+    image:
+      "https://res.cloudinary.com/dvgohigq8/image/upload/f_auto,q_auto/portfolio/gallery/USA/Tennessee/DSCF4775",
+    featured: "test-framework",
+  },
+  {
+    title: "Memory Map Analysis System",
     blurb:
       "Large-scale firmware data tooling for normalizing, comparing, clustering, and reporting on 55,000 memory map variables across engineering tools.",
     image:
@@ -358,28 +359,40 @@ function MemoryMapThumb({ reduceMotion }: { reduceMotion: boolean }) {
 
 const techCards: TechCardData[] = [
   {
-    title: "Embedded Firmware",
+    title: "BSP & Device Drivers",
     description:
-      "BSP development, peripheral device drivers built from scratch, DMA controllers, clock tree configuration, PLL settings, HAL layers, interrupt-safe state machines, and OTA flows.",
-    tags: ["C", "C++", "STM32", "Silicon Labs", "FreeRTOS", "DMA", "ARM Cortex-M"],
+      "Board Support Packages and peripheral drivers built from the ground up on STM32 and Silicon Labs — UART, SPI, I²C, CAN, ADC, GPIO, PWM, timers. HAL layers for portability across platform variants, plus bootloader and board bring-up.",
+    tags: ["BSP", "HAL", "STM32", "Silicon Labs", "Bootloader", "Bring-up"],
   },
   {
-    title: "Connectivity & Protocols",
+    title: "DMA, Clock & Power",
     description:
-      "CAN bus, BLE, Cellular, Wi-Fi, GPS/GNSS, plus MQTT, HTTP, TLS/SSL, AT command interfaces, and secure provisioning.",
-    tags: ["CAN", "BLE", "MQTT", "GNSS", "TLS/SSL"],
+      "DMA controllers in single-shot and circular modes, full clock-tree configuration (HSI/HSE/PLL, AHB/APB prescalers, peripheral enables), power domain control, sleep / deep-sleep / standby transitions, clock gating, and wake-up handlers.",
+    tags: ["DMA", "PLL", "Clock Tree", "Low Power", "NVIC", "Wake-up"],
   },
   {
-    title: "Device to Cloud",
+    title: "RTOS & Architecture",
     description:
-      "AWS IoT Core, signed URLs, fleet registry patterns, monitoring, and telemetry ingestion pipelines.",
-    tags: ["AWS", "Azure", "Athena"],
+      "FreeRTOS multi-threaded firmware with tasks, queues, semaphores, mutexes, ISR-safe APIs, and interrupt-to-task synchronization. Cortex-M internals — NVIC, MPU, SysTick, register-level peripheral access.",
+    tags: ["FreeRTOS", "ARM Cortex-M", "RTOS Primitives", "ISR-safe", "Multi-threaded"],
   },
   {
-    title: "Test Automation & HIL",
+    title: "Connectivity & Cloud",
     description:
-      "PyTest and GoogleTest, Jenkins CI, power analysis, and GNSS simulation for practical regression coverage.",
-    tags: ["PyTest", "GoogleTest", "Jenkins", "ADO"],
+      "CAN bus, BLE (Nordic / TI / Silicon Labs / ST stacks), cellular LTE-M & NB-IoT (Quectel modems), GPS/GNSS, AT-command parsers, MQTT/HTTPS over TLS — flowing into AWS IoT Core, Azure, and Athena telemetry pipelines.",
+    tags: ["BLE", "CAN", "Cellular", "GNSS", "MQTT", "TLS/SSL", "AWS IoT", "Azure", "Athena"],
+  },
+  {
+    title: "Debug & Tooling",
+    description:
+      "JTAG/SWD with ST-Link and J-Link, stop-mode debugging, GCC / GDB / GNU ARM toolchain, logic analyzers and oscilloscopes for protocol and signal-timing validation, plus profiling and static analysis.",
+    tags: ["JTAG", "SWD", "ST-Link", "J-Link", "GCC/GDB", "Logic Analyzer", "Oscilloscope"],
+  },
+  {
+    title: "Test Automation & CI",
+    description:
+      "PyTest and GoogleTest unit suites, Jenkins-driven regression across BLE / Cellular / GNSS / CAN, HIL testbeds for cyber-physical validation, power analysis, and GNSS simulation for repeatable field-condition coverage.",
+    tags: ["PyTest", "GoogleTest", "Jenkins", "HIL", "Power Analysis", "GNSS Sim"],
   },
 ];
 
@@ -700,20 +713,26 @@ function useActiveSection(ids: string[]) {
 
   useEffect(() => {
     const update = () => {
-      const triggerPoint = window.scrollY + window.innerHeight * 0.35;
+      const scrollY = window.scrollY;
+      const triggerPoint = scrollY + window.innerHeight * 0.4;
       let current = ids[0];
       for (const id of ids) {
         const el = document.getElementById(id);
-        if (el && el.offsetTop <= triggerPoint) {
-          current = id;
+        if (el) {
+          const top = el.getBoundingClientRect().top + scrollY;
+          if (top <= triggerPoint) current = id;
         }
       }
       setActive(current);
     };
 
     window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update, { passive: true });
     update();
-    return () => window.removeEventListener("scroll", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
   }, [ids]);
 
   return active;
@@ -1043,7 +1062,7 @@ const dmaProject = {
   ],
   impact: [
     "Enables non-blocking, low-latency communication.",
-    "Demonstrates depth across DMA, UART, interrupts, and hardware control.",
+    "Removed per-byte interrupt overhead from the UART transfer path using circular DMA mode.",
     "Supports reliable BLE / MCU / cellular bridging in a real embedded system.",
   ],
   focus: [
@@ -1157,7 +1176,7 @@ function DmaProjectHighlight() {
     >
       <div className="dma-feature-copy">
         <motion.div {...childMotion} transition={{ duration: 0.42 }}>
-          <span className="dma-eyebrow">Featured embedded project</span>
+          <span className="dma-eyebrow">Real-time DMA firmware</span>
           <h3>DMA-Based UART Passthrough System</h3>
           <p className="dma-category">{dmaProject.category}</p>
           <p className="dma-summary">{dmaProject.summary}</p>
@@ -1183,7 +1202,7 @@ function DmaProjectHighlight() {
         </motion.div>
 
         <motion.section className="dma-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
-          <h4>Engineering Focus</h4>
+          <h4>Key Challenges</h4>
           <div className="dma-focus-grid">
             {dmaProject.focus.map((item) => (
               <span key={item}>{item}</span>
@@ -1415,7 +1434,7 @@ function TestFrameworkProjectHighlight() {
     >
       <div className="test-framework-feature-copy">
         <motion.div {...childMotion} transition={{ duration: 0.42 }}>
-          <span className="test-framework-eyebrow">Featured validation infrastructure project</span>
+          <span className="test-framework-eyebrow">Hardware-integrated CI pipeline</span>
           <h3>Automated Test Framework (PyTest + Jenkins)</h3>
           <p className="test-framework-category">{testFrameworkProject.category}</p>
           <p className="test-framework-summary">{testFrameworkProject.summary}</p>
@@ -1441,7 +1460,7 @@ function TestFrameworkProjectHighlight() {
         </motion.div>
 
         <motion.section className="test-framework-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
-          <h4>Engineering Focus</h4>
+          <h4>Key Challenges</h4>
           <div className="test-framework-focus-grid">
             {testFrameworkProject.focus.map((item) => (
               <span key={item}>{item}</span>
@@ -1482,7 +1501,7 @@ const memoryMapProject = {
     "Established a cleaner baseline for memory map naming and address usage.",
   ],
   impact: [
-    "Solved a cross-team consistency problem at scale.",
+    "Processed and reconciled 55,000+ variables across 4 engineering tools, exposing inconsistencies invisible in per-tool review.",
     "Exposed address conflicts, label mismatches, and access-level drift.",
     "Connected firmware domain knowledge with large-scale analysis.",
     "Supported future standardization and reliability work.",
@@ -1660,8 +1679,8 @@ function MemoryMapProjectHighlight() {
     >
       <div className="memmap-feature-copy">
         <motion.div {...childMotion} transition={{ duration: 0.42 }}>
-          <span className="memmap-eyebrow">Featured systems tooling project</span>
-          <h3>Memory Map Intelligence Platform</h3>
+          <span className="memmap-eyebrow">Firmware data analysis tooling</span>
+          <h3>Memory Map Analysis System</h3>
           <p className="memmap-category">{memoryMapProject.category}</p>
           <p className="memmap-summary">{memoryMapProject.summary}</p>
         </motion.div>
@@ -1686,7 +1705,7 @@ function MemoryMapProjectHighlight() {
         </motion.div>
 
         <motion.section className="memmap-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
-          <h4>Engineering Focus</h4>
+          <h4>Key Challenges</h4>
           <div className="memmap-focus-grid">
             {memoryMapProject.focus.map((item) => (
               <span key={item}>{item}</span>
@@ -1728,7 +1747,7 @@ const bleScanProject = {
     "Reduced unnecessary packet processing in dense BLE environments.",
   ],
   impact: [
-    "Demonstrates BLE understanding beyond application-level usage.",
+    "Cut unnecessary packet processing overhead by filtering at the HCI layer before data reaches the application.",
     "Enables efficient device discovery and filtering in RF-dense environments.",
     "Balances protocol behavior, memory constraints, and firmware architecture.",
     "Supports scalable wireless features inside a modular embedded platform.",
@@ -1778,6 +1797,7 @@ function BleScanVisualization() {
     <div className="ble-scan-visual" aria-label="BLE advertisements moving through scan, filter, firmware stack, and selected output">
       <div className="ble-scan-grid" />
       <div className="ble-scan-field" aria-hidden="true" />
+      <div className="ble-scan-field-ring" aria-hidden="true" />
 
       <div className="ble-scan-broadcasts">
         <span className="ble-scan-stage-label">broadcast environment</span>
@@ -1790,6 +1810,7 @@ function BleScanVisualization() {
           >
             <span className="ble-scan-wave" />
             <span className="ble-scan-wave ble-scan-wave-delay" />
+            <span className="ble-scan-wave ble-scan-wave-delay-2" />
             <strong>{device.selected ? "target" : "adv"}</strong>
             <small>{device.label}</small>
           </motion.div>
@@ -1896,7 +1917,7 @@ function BleScanProjectHighlight() {
     >
       <div className="ble-scan-feature-copy">
         <motion.div {...childMotion} transition={{ duration: 0.42 }}>
-          <span className="ble-scan-eyebrow">Featured wireless firmware project</span>
+          <span className="ble-scan-eyebrow">BLE stack firmware integration</span>
           <h3>BLE Scan-Only Mode & Stack Integration</h3>
           <p className="ble-scan-category">{bleScanProject.category}</p>
           <p className="ble-scan-summary">{bleScanProject.summary}</p>
@@ -1922,7 +1943,7 @@ function BleScanProjectHighlight() {
         </motion.div>
 
         <motion.section className="ble-scan-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
-          <h4>Engineering Focus</h4>
+          <h4>Key Challenges</h4>
           <div className="ble-scan-focus-grid">
             {bleScanProject.focus.map((item) => (
               <span key={item}>{item}</span>
@@ -1964,7 +1985,7 @@ const iotLoggerProject = {
     "Helped shape a robust device-side design for real-world IoT conditions where connectivity is not guaranteed.",
   ],
   impact: [
-    "Demonstrates device-to-cloud systems thinking.",
+    "Eliminated data loss during connectivity outages through flash-backed local buffering.",
     "Improves data reliability by preventing loss during poor network conditions.",
     "Balances embedded constraints with cloud integration requirements.",
     "Designs around real-world failure modes instead of ideal lab conditions.",
@@ -2171,7 +2192,7 @@ function IotLoggerProjectHighlight() {
     >
       <div className="iot-logger-feature-copy">
         <motion.div {...childMotion} transition={{ duration: 0.42 }}>
-          <span className="iot-logger-eyebrow">Featured system architecture project</span>
+          <span className="iot-logger-eyebrow">End-to-end IoT system architecture</span>
           <h3>IoT Data Logger (BLE + Cellular + AWS)</h3>
           <p className="iot-logger-category">{iotLoggerProject.category}</p>
           <p className="iot-logger-summary">{iotLoggerProject.summary}</p>
@@ -2197,7 +2218,7 @@ function IotLoggerProjectHighlight() {
         </motion.div>
 
         <motion.section className="iot-logger-copy-block" {...childMotion} transition={{ duration: 0.42, delay: 0.16 }}>
-          <h4>Engineering Focus</h4>
+          <h4>Key Challenges</h4>
           <div className="iot-logger-focus-grid">
             {iotLoggerProject.focus.map((item) => (
               <span key={item}>{item}</span>
@@ -2229,7 +2250,7 @@ function IotLoggerProjectHighlight() {
 function Highlights() {
   const defaultProjectIndex = Math.max(
     0,
-    highlights.findIndex((item) => item.featured === "memory-map"),
+    highlights.findIndex((item) => item.featured === "iot-logger"),
   );
   const [activeIndex, setActiveIndex] = useState(defaultProjectIndex);
   const [hasManualSelection, setHasManualSelection] = useState(false);
@@ -2256,7 +2277,7 @@ function Highlights() {
       <SectionHeading
         label="// highlights"
         title="Signature Work"
-        subtitle="A few focus areas the portfolio is built around"
+        subtitle="Selected projects spanning firmware, wireless systems, and tooling"
       />
       <ContainerScroll>
         <div className="signature-scroll-content">
@@ -2364,9 +2385,298 @@ function TechCard({ card, delay }: { card: TechCardData; delay: number }) {
   );
 }
 
+type SkillIconProps = { size?: number };
+
+const SkillCIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M19.07 6.93A10 10 0 1 0 21 12a10 10 0 0 0-1.93-5.07zM12 20a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" fill="#A8B9CC" />
+    <path d="M17.54 10.18A5.93 5.93 0 0 0 12 6.5a5.5 5.5 0 1 0 0 11 5.93 5.93 0 0 0 5.54-3.68h-2.11A3.77 3.77 0 0 1 12 15.5a3.5 3.5 0 1 1 0-7 3.77 3.77 0 0 1 3.43 1.68z" fill="#A8B9CC" />
+  </svg>
+);
+const SkillCppIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M10.5 15.5a3.5 3.5 0 1 1 0-7 3.77 3.77 0 0 1 3.43 1.68h2.11A5.93 5.93 0 0 0 10.5 6.5a5.5 5.5 0 1 0 0 11 5.93 5.93 0 0 0 5.54-3.68h-2.11A3.77 3.77 0 0 1 10.5 15.5z" fill="#00599C" />
+    <path d="M18 11h-1v-1h-1v1h-1v1h1v1h1v-1h1z" fill="#00599C" />
+    <path d="M21 11h-1v-1h-1v1h-1v1h1v1h1v-1h1z" fill="#00599C" />
+  </svg>
+);
+const SkillPythonIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M11.914 2C9.485 2 7.6 3.152 7.6 5.133V6.8h4.571v.571H5.486C3.514 7.371 2 9.371 2 12.114c0 2.743 1.514 4.458 3.486 4.458h1.143V14.8c0-2.171 1.657-3.6 3.829-3.6h5.028c1.829 0 3.086-1.343 3.086-3.2V5.133C18.571 3.152 16.628 2 11.914 2zm-1.6 2.114a.914.914 0 1 1 0 1.829.914.914 0 0 1 0-1.829z" fill="#3776AB" />
+    <path d="M12.086 22c2.429 0 4.314-1.152 4.314-3.133V17.2H11.83v-.571h6.685C20.486 16.629 22 14.629 22 11.886c0-2.743-1.514-4.458-3.486-4.458h-1.143v1.772c0 2.171-1.657 3.6-3.829 3.6H8.514c-1.829 0-3.086 1.343-3.086 3.2v3.867C5.428 20.848 7.371 22 12.086 22zm1.6-2.114a.914.914 0 1 1 0-1.829.914.914 0 0 1 0 1.829z" fill="#FFD43B" />
+  </svg>
+);
+const SkillArmIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="#0091BD" strokeWidth="1.5" />
+    <rect x="7" y="4" width="1.5" height="3" fill="#0091BD" />
+    <rect x="10.25" y="4" width="1.5" height="3" fill="#0091BD" />
+    <rect x="13.5" y="4" width="1.5" height="3" fill="#0091BD" />
+    <rect x="7" y="17" width="1.5" height="3" fill="#0091BD" />
+    <rect x="10.25" y="17" width="1.5" height="3" fill="#0091BD" />
+    <rect x="13.5" y="17" width="1.5" height="3" fill="#0091BD" />
+    <rect x="5" y="9.5" width="14" height="5" rx="1" fill="#0091BD" opacity="0.2" />
+    <text x="12" y="13.5" textAnchor="middle" fontSize="4.5" fontWeight="700" fill="#0091BD" fontFamily="sans-serif" letterSpacing="0.5">ARM</text>
+  </svg>
+);
+const SkillFreeRtosIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" fill="none" stroke="#D2820A" strokeWidth="1.5" />
+    <line x1="12" y1="12" x2="12" y2="6" stroke="#D2820A" strokeWidth="1.5" strokeLinecap="round" />
+    <line x1="12" y1="12" x2="15.5" y2="14" stroke="#D2820A" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="12" cy="12" r="1.2" fill="#D2820A" />
+  </svg>
+);
+const SkillAwsIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M21.5 14.5a.85.85 0 0 1-.6-.25l-1.4-1.4a5.52 5.52 0 0 1-3.5 1.15A5.5 5.5 0 1 1 21.5 8.5v6z" fill="none" stroke="#FF9900" strokeWidth="1.3" />
+    <path d="M8 17.5c1.5 1 3.3 1.5 5 1.5 2 0 4.1-.7 5.7-2" fill="none" stroke="#FF9900" strokeWidth="1.3" strokeLinecap="round" />
+    <path d="M19.5 16l1 1.5-1 .5" fill="none" stroke="#FF9900" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+const SkillStm32Icon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="#0099E0" strokeWidth="1.5" />
+    <rect x="7" y="4" width="1.5" height="3" fill="#0099E0" />
+    <rect x="10.25" y="4" width="1.5" height="3" fill="#0099E0" />
+    <rect x="13.5" y="4" width="1.5" height="3" fill="#0099E0" />
+    <rect x="7" y="17" width="1.5" height="3" fill="#0099E0" />
+    <rect x="10.25" y="17" width="1.5" height="3" fill="#0099E0" />
+    <rect x="13.5" y="17" width="1.5" height="3" fill="#0099E0" />
+    <rect x="5" y="9.5" width="14" height="5" rx="1" fill="#0099E0" opacity="0.15" />
+    <text x="12" y="13.2" textAnchor="middle" fontSize="3.8" fontWeight="700" fill="#0099E0" fontFamily="sans-serif" letterSpacing="0.2">STM32</text>
+  </svg>
+);
+const SkillSiLabsIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="#00B5E2" strokeWidth="1.5" />
+    <rect x="7" y="4" width="1.5" height="3" fill="#00B5E2" />
+    <rect x="10.25" y="4" width="1.5" height="3" fill="#00B5E2" />
+    <rect x="13.5" y="4" width="1.5" height="3" fill="#00B5E2" />
+    <rect x="7" y="17" width="1.5" height="3" fill="#00B5E2" />
+    <rect x="10.25" y="17" width="1.5" height="3" fill="#00B5E2" />
+    <rect x="13.5" y="17" width="1.5" height="3" fill="#00B5E2" />
+    <rect x="5" y="9.5" width="14" height="5" rx="1" fill="#00B5E2" opacity="0.15" />
+    <text x="12" y="13.2" textAnchor="middle" fontSize="3.4" fontWeight="700" fill="#00B5E2" fontFamily="sans-serif" letterSpacing="0.2">SiLabs</text>
+  </svg>
+);
+const SkillNordicIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="#00A9CE" strokeWidth="1.5" />
+    <rect x="7" y="4" width="1.5" height="3" fill="#00A9CE" />
+    <rect x="10.25" y="4" width="1.5" height="3" fill="#00A9CE" />
+    <rect x="13.5" y="4" width="1.5" height="3" fill="#00A9CE" />
+    <rect x="7" y="17" width="1.5" height="3" fill="#00A9CE" />
+    <rect x="10.25" y="17" width="1.5" height="3" fill="#00A9CE" />
+    <rect x="13.5" y="17" width="1.5" height="3" fill="#00A9CE" />
+    <rect x="5" y="9.5" width="14" height="5" rx="1" fill="#00A9CE" opacity="0.15" />
+    <text x="12" y="13.2" textAnchor="middle" fontSize="3.6" fontWeight="700" fill="#00A9CE" fontFamily="sans-serif" letterSpacing="0.2">Nordic</text>
+  </svg>
+);
+const SkillTiIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="#CC0000" strokeWidth="1.5" />
+    <rect x="7" y="4" width="1.5" height="3" fill="#CC0000" />
+    <rect x="10.25" y="4" width="1.5" height="3" fill="#CC0000" />
+    <rect x="13.5" y="4" width="1.5" height="3" fill="#CC0000" />
+    <rect x="7" y="17" width="1.5" height="3" fill="#CC0000" />
+    <rect x="10.25" y="17" width="1.5" height="3" fill="#CC0000" />
+    <rect x="13.5" y="17" width="1.5" height="3" fill="#CC0000" />
+    <rect x="5" y="9.5" width="14" height="5" rx="1" fill="#CC0000" opacity="0.15" />
+    <text x="12" y="13.4" textAnchor="middle" fontSize="5" fontWeight="800" fill="#CC0000" fontFamily="sans-serif" letterSpacing="0.5">TI</text>
+  </svg>
+);
+const SkillBleIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="9.5" fill="none" stroke="#0082FC" strokeWidth="1.2" opacity="0.6" />
+    <path
+      d="M9 7.5 L15 12 L11 16 L11 8 L15 12 L9 16.5"
+      fill="none"
+      stroke="#0082FC"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+const SkillCanIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M3 9 L9 9 L11 12 L13 12 L15 9 L21 9" fill="none" stroke="#F2A900" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M3 15 L9 15 L11 12 L13 12 L15 15 L21 15" fill="none" stroke="#F2A900" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="3" cy="9" r="1" fill="#F2A900" />
+    <circle cx="3" cy="15" r="1" fill="#F2A900" />
+    <circle cx="21" cy="9" r="1" fill="#F2A900" />
+    <circle cx="21" cy="15" r="1" fill="#F2A900" />
+  </svg>
+);
+
+const skillsTimeline: RadialTimelineItem[] = [
+  // Inner ring — Languages
+  {
+    id: 1,
+    title: "C",
+    date: "Languages",
+    category: "Languages",
+    content: "Daily driver across BSPs, peripheral drivers, ISRs, and FreeRTOS task code on STM32 and Silicon Labs.",
+    icon: SkillCIcon,
+    relatedIds: [4, 5, 6, 7, 8],
+    status: "completed",
+    energy: 95,
+    color: "#A8B9CC",
+    ring: 0,
+  },
+  {
+    id: 2,
+    title: "C++",
+    date: "Languages",
+    category: "Languages",
+    content: "Firmware abstractions, GoogleTest harnesses, and host-side tooling for ARM Cortex-M projects.",
+    icon: SkillCppIcon,
+    relatedIds: [1, 4, 7],
+    status: "completed",
+    energy: 88,
+    color: "#00599C",
+    ring: 0,
+  },
+  {
+    id: 3,
+    title: "Python",
+    date: "Tooling",
+    category: "Languages",
+    content: "PyTest fixtures, Jenkins-driven HIL regressions, AWS-backed monitoring GUIs, and ML pipelines (PyTorch).",
+    icon: SkillPythonIcon,
+    relatedIds: [11, 12],
+    status: "completed",
+    energy: 90,
+    color: "#FFD43B",
+    ring: 0,
+  },
+
+  // Middle ring — Architecture, RTOS, cross-platform protocols
+  {
+    id: 4,
+    title: "ARM Cortex-M",
+    date: "Architecture",
+    category: "Architecture",
+    content: "Cortex-M internals — NVIC, MPU, SysTick, SWD debugging, AHB/APB bus topology, register-level work.",
+    icon: SkillArmIcon,
+    relatedIds: [1, 2, 5, 7, 8],
+    status: "completed",
+    energy: 92,
+    color: "#0091BD",
+    ring: 1,
+  },
+  {
+    id: 5,
+    title: "FreeRTOS",
+    date: "RTOS",
+    category: "RTOS",
+    content: "Multi-threaded firmware with tasks, queues, mutexes, ISR-safe primitives, and interrupt-to-task sync.",
+    icon: SkillFreeRtosIcon,
+    relatedIds: [1, 4, 7, 8],
+    status: "completed",
+    energy: 88,
+    color: "#D2820A",
+    ring: 1,
+  },
+  {
+    id: 6,
+    title: "BLE Stack",
+    date: "Connectivity",
+    category: "Connectivity",
+    content: "BLE 5.x — GATT services, advertising, and pairing across Nordic SoftDevice, TI BLE-Stack, Silicon Labs Bluetooth, and ST BlueNRG.",
+    icon: SkillBleIcon,
+    relatedIds: [1, 7, 8, 9, 10],
+    status: "completed",
+    energy: 86,
+    color: "#0082FC",
+    ring: 1,
+  },
+  {
+    id: 7,
+    title: "CAN Bus",
+    date: "Connectivity",
+    category: "Connectivity",
+    content: "CAN controllers and peripheral drivers built from scratch — bxCAN/FDCAN, mailboxes, filters, error handling.",
+    icon: SkillCanIcon,
+    relatedIds: [1, 4, 8, 11],
+    status: "completed",
+    energy: 84,
+    color: "#F2A900",
+    ring: 1,
+  },
+
+  // Outer ring — Vendor platforms + cloud
+  {
+    id: 8,
+    title: "STM32",
+    date: "Platform",
+    category: "Platform",
+    content: "F/L/U series — HAL, LL, bare-metal. DMA, clock-tree (HSI/HSE/PLL), AHB/APB prescalers, UART/SPI/I²C/CAN/ADC.",
+    icon: SkillStm32Icon,
+    relatedIds: [1, 4, 5, 6, 7, 9],
+    status: "completed",
+    energy: 95,
+    color: "#0099E0",
+    ring: 2,
+  },
+  {
+    id: 9,
+    title: "Silicon Labs",
+    date: "Platform",
+    category: "Platform",
+    content: "EFR32 (BLE/Zigbee/Thread) and EFM32 — Simplicity SDK, peripheral drivers, EM0–EM4 power modes, board bring-up.",
+    icon: SkillSiLabsIcon,
+    relatedIds: [1, 4, 5, 6, 8],
+    status: "completed",
+    energy: 90,
+    color: "#00B5E2",
+    ring: 2,
+  },
+  {
+    id: 10,
+    title: "Nordic",
+    date: "Platform",
+    category: "Platform",
+    content: "nRF5 SDK and nRF Connect SDK (Zephyr) — SoftDevice integration, GATT services, peripheral & central roles.",
+    icon: SkillNordicIcon,
+    relatedIds: [1, 4, 6],
+    status: "completed",
+    energy: 82,
+    color: "#00A9CE",
+    ring: 2,
+  },
+  {
+    id: 11,
+    title: "TI",
+    date: "Platform",
+    category: "Platform",
+    content: "Texas Instruments BLE platforms — TI BLE-Stack, SimpleLink SDK, sensor controller, wireless peripheral roles.",
+    icon: SkillTiIcon,
+    relatedIds: [1, 4, 6, 7],
+    status: "completed",
+    energy: 78,
+    color: "#CC0000",
+    ring: 2,
+  },
+  {
+    id: 12,
+    title: "AWS IoT",
+    date: "Cloud",
+    category: "Cloud",
+    content: "AWS IoT Core with MQTT/HTTPS over TLS, device shadows, certificate provisioning, fleet patterns, Athena telemetry.",
+    icon: SkillAwsIcon,
+    relatedIds: [3, 6, 8],
+    status: "completed",
+    energy: 80,
+    color: "#FF9900",
+    ring: 2,
+  },
+];
+
 function TechStack() {
   return (
-    <section className="section page" id="about">
+    <section className="section page">
       <SectionHeading
         label="// stack"
         title="Tech Stack & Capabilities"
@@ -2374,7 +2684,7 @@ function TechStack() {
       />
       <div className="techstack-split">
         <div className="tech-orbit-wrap">
-          <OrbitingSkills />
+          <RadialOrbitalTimeline timelineData={skillsTimeline} />
         </div>
         <div className="tech-grid">
           {techCards.map((card, index) => (
@@ -2540,7 +2850,7 @@ function Experience() {
 
 function Education() {
   return (
-    <section className="section page">
+    <section className="section page" id="about">
       <SectionHeading label="// academia" title="Education" />
       <div className="education-grid">
         {education.map((item, index) => (
@@ -2700,18 +3010,21 @@ export function PortfolioPage() {
   return (
     <>
       <nav className="nav">
+        <GlassFilter />
         <a href="#hero" className="nav-logo" onClick={closeMobileNav}>
           sra.engineer
         </a>
-        <ul className="nav-links">
-          {navItems.map(([id, label]) => (
-            <li key={id}>
-              <a href={`#${id}`} className={activeSection === id ? "is-active" : ""}>
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <GlassEffect className="nav-glass" contentClassName="nav-glass-content">
+          <ul className="nav-links">
+            {navItems.map(([id, label]) => (
+              <li key={id}>
+                <a href={`#${id}`} className={activeSection === id ? "is-active" : ""}>
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </GlassEffect>
         <button
           type="button"
           className="nav-toggle"
