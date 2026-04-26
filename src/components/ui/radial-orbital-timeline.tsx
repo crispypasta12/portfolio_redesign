@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useSyncExternalStore, type ComponentType } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore, type ComponentType, type CSSProperties } from "react";
 
 interface IconProps {
   size?: number;
@@ -20,17 +20,31 @@ export interface RadialTimelineItem {
   ring?: 0 | 1 | 2;
 }
 
-interface RadialOrbitalTimelineProps {
-  timelineData: RadialTimelineItem[];
+export interface RadialTimelineRingMeta {
+  label: string;
+  caption: string;
+  color: string;
 }
 
+interface RadialOrbitalTimelineProps {
+  timelineData: RadialTimelineItem[];
+  ringMeta?: readonly RadialTimelineRingMeta[];
+}
+
+const DEFAULT_RING_META = [
+  { label: "Languages", caption: "Core code", color: "rgba(168, 185, 204, 0.9)" },
+  { label: "Firmware", caption: "Architecture + buses", color: "rgba(0, 145, 189, 0.9)" },
+  { label: "Platforms", caption: "MCUs + cloud", color: "rgba(255, 153, 0, 0.9)" },
+] as const;
 const RING_RADII = [70, 138, 205] as const;
 const RING_PHASE = [0, Math.PI / 6, Math.PI / 4] as const;
-const RING_SPEEDS = [1, -0.7, 0.55] as const;
+const RING_SPEEDS = [0.96, -0.68, 0.52] as const;
 const CONTAINER_SIZE = 480;
 const emptySubscribe = () => () => {};
 const clientSnapshot = () => true;
 const serverSnapshot = () => false;
+
+const withAlpha = (rgba: string, alpha: number) => rgba.replace(/,\s*[\d.]+\)$/, `, ${alpha})`);
 
 const ArrowRightIcon = ({ size = 8 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -52,27 +66,208 @@ const ZapIcon = ({ size = 10 }: IconProps) => (
   </svg>
 );
 
-const getStatusStyle = (status: RadialTimelineItem["status"]) => {
-  switch (status) {
-    case "completed":
-      return { background: "rgba(210, 140, 0, 0.18)", color: "rgba(255, 215, 130, 0.95)", border: "1px solid rgba(210, 140, 0, 0.45)" };
-    case "in-progress":
-      return { background: "rgba(255, 255, 255, 0.92)", color: "#0a0c10", border: "1px solid rgba(255, 255, 255, 0.6)" };
-    case "pending":
-      return { background: "rgba(255, 255, 255, 0.06)", color: "rgba(255, 255, 255, 0.7)", border: "1px solid rgba(255, 255, 255, 0.18)" };
-  }
-};
+interface SkillDetailCardProps {
+  item: RadialTimelineItem;
+  timelineData: RadialTimelineItem[];
+  onSelectRelated: (id: number) => void;
+  popoverAbove?: boolean;
+  compact?: boolean;
+}
 
-const statusLabel = (status: RadialTimelineItem["status"]) =>
-  status === "completed" ? "PROVEN" : status === "in-progress" ? "ACTIVE" : "EXPLORING";
+function SkillDetailCard({ item, timelineData, onSelectRelated, popoverAbove = false, compact = false }: SkillDetailCardProps) {
+  const cardStyle: CSSProperties = compact
+    ? {
+        width: "100%",
+        background: "rgba(8,10,16,0.92)",
+        backdropFilter: "blur(16px)",
+        border: "1px solid rgba(255,255,255,0.16)",
+        borderRadius: "10px",
+        boxShadow: "0 18px 42px rgba(0,0,0,0.38)",
+        padding: "14px 16px",
+      }
+    : {
+        position: "absolute",
+        ...(popoverAbove ? { bottom: "calc(100% + 36px)" } : { top: "calc(100% + 36px)" }),
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "256px",
+        background: "rgba(8,10,16,0.92)",
+        backdropFilter: "blur(16px)",
+        border: "1px solid rgba(255,255,255,0.18)",
+        borderRadius: "10px",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 24px rgba(255,255,255,0.06)",
+        padding: "14px 16px",
+        zIndex: 300,
+      };
 
-export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTimelineProps) {
+  return (
+    <div
+      className={compact ? "skill-detail-dock-card" : "skill-detail-popover"}
+      onClick={(e) => e.stopPropagation()}
+      style={cardStyle}
+    >
+      {!compact && (
+        <div
+          style={{
+            position: "absolute",
+            ...(popoverAbove ? { bottom: "-12px" } : { top: "-12px" }),
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "1px",
+            height: "12px",
+            background: "rgba(255,255,255,0.45)",
+          }}
+        />
+      )}
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+        <span
+          style={{
+            fontSize: "0.62rem",
+            fontFamily: '"JetBrains Mono", monospace',
+            color: "rgba(255,255,255,0.5)",
+            letterSpacing: "0.06em",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {item.date}
+        </span>
+      </div>
+
+      <div
+        style={{
+          marginTop: "8px",
+          fontSize: "0.92rem",
+          fontWeight: 600,
+          color: "#fff",
+        }}
+      >
+        {item.title}
+      </div>
+
+      <p
+        style={{
+          marginTop: "6px",
+          fontSize: "0.74rem",
+          color: "rgba(255,255,255,0.78)",
+          lineHeight: 1.55,
+        }}
+      >
+        {item.content}
+      </p>
+
+      <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontSize: "0.66rem",
+            color: "rgba(255,255,255,0.7)",
+            marginBottom: "6px",
+          }}
+        >
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+            <ZapIcon size={10} />
+            Proficiency
+          </span>
+          <span style={{ fontFamily: '"JetBrains Mono", monospace', color: "rgba(255,215,130,0.95)" }}>
+            {item.energy}%
+          </span>
+        </div>
+        <div
+          style={{
+            width: "100%",
+            height: "4px",
+            background: "rgba(255,255,255,0.08)",
+            borderRadius: "2px",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: `${item.energy}%`,
+              background: `linear-gradient(90deg, ${item.color ?? "rgba(210,140,0,0.85)"}, rgba(255,180,80,0.95))`,
+              borderRadius: "2px",
+            }}
+          />
+        </div>
+      </div>
+
+      {item.relatedIds.length > 0 && (
+        <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: "6px", gap: "5px" }}>
+            <LinkIcon size={10} />
+            <span
+              style={{
+                fontSize: "0.6rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                color: "rgba(255,255,255,0.6)",
+                fontWeight: 600,
+              }}
+            >
+              Connected Skills
+            </span>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+            {item.relatedIds.map((relatedId) => {
+              const relatedItem = timelineData.find((i) => i.id === relatedId);
+              if (!relatedItem) return null;
+              return (
+                <button
+                  key={relatedId}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectRelated(relatedId);
+                  }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    minHeight: "22px",
+                    padding: "2px 8px",
+                    fontSize: "0.62rem",
+                    fontFamily: '"JetBrains Mono", monospace',
+                    color: "rgba(255,255,255,0.85)",
+                    background: "transparent",
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    transition: "background 200ms ease, color 200ms ease, border-color 200ms ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+                    e.currentTarget.style.color = "#fff";
+                    e.currentTarget.style.borderColor = "rgba(210,140,0,0.5)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "rgba(255,255,255,0.85)";
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)";
+                  }}
+                >
+                  {relatedItem.title}
+                  <ArrowRightIcon size={8} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function RadialOrbitalTimeline({ timelineData, ringMeta = DEFAULT_RING_META }: RadialOrbitalTimelineProps) {
   const isMounted = useSyncExternalStore(emptySubscribe, clientSnapshot, serverSnapshot);
   const [expandedItems, setExpandedItems] = useState<Record<number, boolean>>({});
   const [rotationAngle, setRotationAngle] = useState<number>(0);
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
   const [pulseEffect, setPulseEffect] = useState<Record<number, boolean>>({});
   const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
+  const [hoveredNodeId, setHoveredNodeId] = useState<number | null>(null);
   const [orbitScale, setOrbitScale] = useState(1);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,6 +278,7 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
     if (e.target === containerRef.current || e.target === orbitRef.current) {
       setExpandedItems({});
       setActiveNodeId(null);
+      setHoveredNodeId(null);
       setPulseEffect({});
       setAutoRotate(true);
     }
@@ -133,7 +329,7 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
     if (!autoRotate) return;
     const timer = setInterval(() => {
       setRotationAngle((prev) => Number(((prev + 0.3) % 360).toFixed(3)));
-    }, 50);
+    }, 60);
     return () => clearInterval(timer);
   }, [autoRotate]);
 
@@ -160,7 +356,7 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
     const x = radius * Math.cos(radian);
     const y = radius * Math.sin(radian);
     const zIndex = Math.round(100 + 50 * Math.cos(radian)) + ring * 5;
-    const opacity = Math.max(0.4, Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2)));
+    const opacity = Math.max(0.72, Math.min(1, 0.72 + 0.28 * ((1 + Math.sin(radian)) / 2)));
     return { x, y, zIndex, opacity };
   };
 
@@ -168,6 +364,9 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
     if (!activeNodeId) return false;
     return getRelatedItems(activeNodeId).includes(itemId);
   };
+
+  const activeItem = activeNodeId ? timelineData.find((item) => item.id === activeNodeId) ?? null : null;
+  const activePosition = activeItem ? calculateNodePosition(activeItem.id) : null;
 
   if (!isMounted) {
     return (
@@ -188,18 +387,27 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
 
   return (
     <div
-      ref={containerRef}
-      onClick={handleContainerClick}
+      className="skill-orbit-shell"
       style={{
-        position: "relative",
         width: `min(${CONTAINER_SIZE}px, calc(100vw - 64px))`,
-        aspectRatio: "1 / 1",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "visible",
+        display: "grid",
+        justifyItems: "center",
+        gap: "14px",
       }}
     >
+      <div
+        ref={containerRef}
+        onClick={handleContainerClick}
+        style={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: "1 / 1",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "visible",
+        }}
+      >
       <div
         ref={orbitRef}
         style={{
@@ -212,53 +420,31 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
           transformOrigin: "center",
         }}
       >
-        {/* Center pulse */}
+        {/* Center hub */}
         <div
           style={{
             position: "absolute",
             top: "50%",
             left: "50%",
-            width: "64px",
-            height: "64px",
+            width: "54px",
+            height: "54px",
             transform: "translate(-50%, -50%)",
             borderRadius: "50%",
-            background: "linear-gradient(145deg, rgba(210,140,0,0.55), rgba(180,80,0,0.45) 60%, rgba(80,60,180,0.55))",
+            background: "linear-gradient(145deg, rgba(210,140,0,0.36), rgba(18,22,32,0.9) 62%, rgba(80,60,180,0.32))",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             zIndex: 15,
-            boxShadow: "0 0 60px rgba(210,140,0,0.25), 0 0 120px rgba(210,140,0,0.1)",
-            animation: "orbit-pulse 2s ease-in-out infinite",
+            border: "1px solid rgba(255,255,255,0.18)",
+            boxShadow: "0 0 36px rgba(210,140,0,0.16)",
           }}
         >
           <div
             style={{
-              position: "absolute",
-              width: "80px",
-              height: "80px",
+              width: "22px",
+              height: "22px",
               borderRadius: "50%",
-              border: "1px solid rgba(255,255,255,0.22)",
-              animation: "orbital-ping 1.6s cubic-bezier(0,0,0.2,1) infinite",
-              opacity: 0.7,
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              width: "96px",
-              height: "96px",
-              borderRadius: "50%",
-              border: "1px solid rgba(255,255,255,0.12)",
-              animation: "orbital-ping 1.6s cubic-bezier(0,0,0.2,1) 0.5s infinite",
-              opacity: 0.5,
-            }}
-          />
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.85)",
+              background: "rgba(255,255,255,0.7)",
               backdropFilter: "blur(4px)",
             }}
           />
@@ -276,18 +462,102 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
               height: `${r * 2}px`,
               transform: "translate(-50%, -50%)",
               borderRadius: "50%",
-              border: `1px solid rgba(210, 140, 0, ${0.22 - i * 0.05})`,
-              boxShadow: i === 0 ? "inset 0 0 40px rgba(210, 140, 0, 0.04)" : undefined,
+              border: `1px solid ${withAlpha(ringMeta[i].color, 0.32 - i * 0.035)}`,
+              boxShadow: [
+                `0 0 ${26 + i * 6}px ${withAlpha(ringMeta[i].color, 0.22 - i * 0.03)}`,
+                `0 0 ${52 + i * 8}px ${withAlpha(ringMeta[i].color, 0.12 - i * 0.018)}`,
+                `inset 0 0 ${30 + i * 6}px ${withAlpha(ringMeta[i].color, 0.085)}`,
+              ].join(", "),
               pointerEvents: "none",
             }}
           />
         ))}
 
+        <div
+          style={{
+            position: "absolute",
+            left: "22px",
+            bottom: "22px",
+            display: "grid",
+            gap: "7px",
+            zIndex: 20,
+            pointerEvents: "none",
+          }}
+        >
+          {ringMeta.map((ring) => (
+            <div key={ring.label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span
+                style={{
+                  width: "7px",
+                  height: "7px",
+                  borderRadius: "50%",
+                  background: ring.color,
+                  boxShadow: `0 0 14px ${ring.color}`,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: "0.58rem",
+                  lineHeight: 1,
+                  color: "rgba(255,255,255,0.62)",
+                  fontFamily: '"JetBrains Mono", monospace',
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}
+              >
+                {ring.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {activeItem && activePosition && activeItem.relatedIds.length > 0 && (
+          <svg
+            width={CONTAINER_SIZE}
+            height={CONTAINER_SIZE}
+            viewBox={`0 0 ${CONTAINER_SIZE} ${CONTAINER_SIZE}`}
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 12,
+              pointerEvents: "none",
+              overflow: "visible",
+            }}
+          >
+            {activeItem.relatedIds.map((relatedId) => {
+              const relatedPosition = calculateNodePosition(relatedId);
+              const startX = CONTAINER_SIZE / 2 + activePosition.x;
+              const startY = CONTAINER_SIZE / 2 + activePosition.y;
+              const endX = CONTAINER_SIZE / 2 + relatedPosition.x;
+              const endY = CONTAINER_SIZE / 2 + relatedPosition.y;
+              const controlX = CONTAINER_SIZE / 2 + (activePosition.x + relatedPosition.x) * 0.35;
+              const controlY = CONTAINER_SIZE / 2 + (activePosition.y + relatedPosition.y) * 0.35;
+
+              return (
+                <path
+                  key={`connection-${activeItem.id}-${relatedId}`}
+                  d={`M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`}
+                  fill="none"
+                  stroke={activeItem.color ?? "rgba(210,140,0,0.85)"}
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeDasharray="4 7"
+                  opacity="0.55"
+                />
+              );
+            })}
+          </svg>
+        )}
+
         {timelineData.map((item) => {
           const position = calculateNodePosition(item.id);
-          const popoverAbove = position.y < 0;
+          const popoverAbove = position.y > 0;
           const isExpanded = !!expandedItems[item.id];
           const isRelated = isRelatedToActive(item.id);
+          const isHovered = hoveredNodeId === item.id;
+          const showLabel = isExpanded || isRelated || isHovered;
           const isPulsing = !!pulseEffect[item.id];
           const Icon = item.icon;
           const accent = item.color ?? "rgba(210, 140, 0, 0.9)";
@@ -298,10 +568,8 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
               ref={(el) => {
                 nodeRefs.current[item.id] = el;
               }}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleItem(item.id);
-              }}
+              onMouseEnter={() => setHoveredNodeId(item.id)}
+              onMouseLeave={() => setHoveredNodeId((current) => (current === item.id ? null : current))}
               style={{
                 position: "absolute",
                 top: "50%",
@@ -310,6 +578,7 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
                 zIndex: isExpanded ? 200 : position.zIndex,
                 opacity: isExpanded ? 1 : position.opacity,
                 cursor: "pointer",
+                outline: "none",
                 transition: "opacity 700ms cubic-bezier(0.4,0,0.2,1)",
               }}
             >
@@ -324,16 +593,28 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
                   transform: "translate(-50%, -50%)",
                   borderRadius: "50%",
                   background: `radial-gradient(circle, ${accent}33 0%, ${accent}00 70%)`,
+                  opacity: isExpanded ? 0.75 : isRelated || isHovered ? 0.42 : 0,
                   animation: isPulsing ? "orbit-pulse 1.8s ease-in-out infinite" : undefined,
+                  transition: "opacity 260ms ease",
                   pointerEvents: "none",
                 }}
               />
 
               {/* Node */}
-              <div
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleItem(item.id);
+                }}
+                onFocus={() => setHoveredNodeId(item.id)}
+                onBlur={() => setHoveredNodeId((current) => (current === item.id ? null : current))}
+                aria-expanded={isExpanded}
+                aria-label={`${item.title} skill details`}
                 style={{
                   width: "44px",
                   height: "44px",
+                  padding: 0,
                   borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
@@ -346,15 +627,19 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
                   color: isExpanded || isRelated ? "#0a0c10" : "#fff",
                   border: `2px solid ${isExpanded ? accent : isRelated ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.35)"}`,
                   boxShadow: isExpanded
-                    ? `0 0 24px ${accent}66, 0 0 48px ${accent}33`
-                    : "0 4px 20px rgba(0,0,0,0.35)",
+                    ? `0 0 20px ${accent}58, 0 0 38px ${accent}26`
+                    : isHovered
+                      ? `0 8px 28px rgba(0,0,0,0.42), 0 0 18px ${accent}36`
+                      : "0 4px 18px rgba(0,0,0,0.32)",
                   transition: "transform 300ms ease, background 300ms ease, border-color 300ms ease, box-shadow 300ms ease",
-                  transform: isExpanded ? "scale(1.4)" : "scale(1)",
+                  transform: isExpanded ? "scale(1.28)" : isHovered ? "scale(1.08)" : "scale(1)",
                   backdropFilter: "blur(8px)",
+                  cursor: "pointer",
+                  appearance: "none",
                 }}
               >
                 <Icon size={18} color={isExpanded || isRelated ? "#0a0c10" : "#fff"} />
-              </div>
+              </button>
 
               {/* Label */}
               <div
@@ -362,14 +647,15 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
                   position: "absolute",
                   top: "calc(100% + 6px)",
                   left: "50%",
-                  transform: `translateX(-50%) ${isExpanded ? "scale(1.15)" : "scale(1)"}`,
+                  transform: `translateX(-50%) translateY(${showLabel ? "0" : "4px"}) ${isExpanded ? "scale(1.08)" : "scale(1)"}`,
                   whiteSpace: "nowrap",
                   fontSize: "0.68rem",
                   fontFamily: '"JetBrains Mono", monospace',
                   fontWeight: 600,
                   letterSpacing: "0.08em",
-                  color: isExpanded ? "#fff" : "rgba(255,255,255,0.7)",
-                  transition: "color 300ms ease, transform 300ms ease",
+                  color: isExpanded ? "#fff" : "rgba(255,255,255,0.74)",
+                  opacity: showLabel ? 1 : 0,
+                  transition: "color 300ms ease, transform 300ms ease, opacity 220ms ease",
                   pointerEvents: "none",
                 }}
               >
@@ -378,191 +664,23 @@ export default function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTim
 
               {/* Expanded card */}
               {isExpanded && (
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    position: "absolute",
-                    ...(popoverAbove
-                      ? { bottom: "calc(100% + 36px)" }
-                      : { top: "calc(100% + 36px)" }),
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "256px",
-                    background: "rgba(8,10,16,0.92)",
-                    backdropFilter: "blur(16px)",
-                    border: "1px solid rgba(255,255,255,0.18)",
-                    borderRadius: "12px",
-                    boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 24px rgba(255,255,255,0.06)",
-                    padding: "14px 16px",
-                    zIndex: 300,
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      ...(popoverAbove ? { bottom: "-12px" } : { top: "-12px" }),
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      width: "1px",
-                      height: "12px",
-                      background: "rgba(255,255,255,0.45)",
-                    }}
-                  />
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span
-                      style={{
-                        ...getStatusStyle(item.status),
-                        padding: "2px 8px",
-                        borderRadius: "999px",
-                        fontSize: "0.62rem",
-                        fontFamily: '"JetBrains Mono", monospace',
-                        fontWeight: 600,
-                        letterSpacing: "0.08em",
-                      }}
-                    >
-                      {statusLabel(item.status)}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "0.62rem",
-                        fontFamily: '"JetBrains Mono", monospace',
-                        color: "rgba(255,255,255,0.5)",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      {item.date}
-                    </span>
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: "8px",
-                      fontSize: "0.92rem",
-                      fontWeight: 600,
-                      color: "#fff",
-                    }}
-                  >
-                    {item.title}
-                  </div>
-
-                  <p
-                    style={{
-                      marginTop: "6px",
-                      fontSize: "0.74rem",
-                      color: "rgba(255,255,255,0.78)",
-                      lineHeight: 1.55,
-                    }}
-                  >
-                    {item.content}
-                  </p>
-
-                  <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        fontSize: "0.66rem",
-                        color: "rgba(255,255,255,0.7)",
-                        marginBottom: "6px",
-                      }}
-                    >
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        <ZapIcon size={10} />
-                        Proficiency
-                      </span>
-                      <span style={{ fontFamily: '"JetBrains Mono", monospace', color: "rgba(255,215,130,0.95)" }}>
-                        {item.energy}%
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "4px",
-                        background: "rgba(255,255,255,0.08)",
-                        borderRadius: "2px",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: "100%",
-                          width: `${item.energy}%`,
-                          background: "linear-gradient(90deg, rgba(210,140,0,0.85), rgba(255,180,80,0.95))",
-                          borderRadius: "2px",
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {item.relatedIds.length > 0 && (
-                    <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                      <div style={{ display: "flex", alignItems: "center", marginBottom: "6px", gap: "5px" }}>
-                        <LinkIcon size={10} />
-                        <span
-                          style={{
-                            fontSize: "0.6rem",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.1em",
-                            color: "rgba(255,255,255,0.6)",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Connected Skills
-                        </span>
-                      </div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                        {item.relatedIds.map((relatedId) => {
-                          const relatedItem = timelineData.find((i) => i.id === relatedId);
-                          if (!relatedItem) return null;
-                          return (
-                            <button
-                              key={relatedId}
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleItem(relatedId);
-                              }}
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "4px",
-                                height: "22px",
-                                padding: "0 8px",
-                                fontSize: "0.62rem",
-                                fontFamily: '"JetBrains Mono", monospace',
-                                color: "rgba(255,255,255,0.85)",
-                                background: "transparent",
-                                border: "1px solid rgba(255,255,255,0.18)",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                                transition: "background 200ms ease, color 200ms ease, border-color 200ms ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-                                e.currentTarget.style.color = "#fff";
-                                e.currentTarget.style.borderColor = "rgba(210,140,0,0.5)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = "transparent";
-                                e.currentTarget.style.color = "rgba(255,255,255,0.85)";
-                                e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)";
-                              }}
-                            >
-                              {relatedItem.title}
-                              <ArrowRightIcon size={8} />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <SkillDetailCard
+                  item={item}
+                  timelineData={timelineData}
+                  onSelectRelated={toggleItem}
+                  popoverAbove={popoverAbove}
+                />
               )}
             </div>
           );
         })}
       </div>
+      </div>
+      {activeItem && (
+        <div className="skill-detail-dock" style={{ width: "min(100%, 360px)", position: "relative", zIndex: 4 }}>
+          <SkillDetailCard item={activeItem} timelineData={timelineData} onSelectRelated={toggleItem} compact />
+        </div>
+      )}
     </div>
   );
 }

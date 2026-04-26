@@ -6,7 +6,7 @@ import { BGPattern } from "@/components/ui/bg-pattern";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { GlassEffect, GlassFilter } from "@/components/ui/liquid-glass";
 import { GlowCard } from "@/components/ui/spotlight-card";
-import RadialOrbitalTimeline, { type RadialTimelineItem } from "@/components/ui/radial-orbital-timeline";
+import RadialOrbitalTimeline, { type RadialTimelineItem, type RadialTimelineRingMeta } from "@/components/ui/radial-orbital-timeline";
 
 type Highlight = {
   title: string;
@@ -371,15 +371,15 @@ const techCards: TechCardData[] = [
     tags: ["DMA", "PLL", "Clock Tree", "Low Power", "NVIC", "Wake-up"],
   },
   {
-    title: "RTOS & Architecture",
+    title: "Concurrent Firmware Architecture",
     description:
-      "FreeRTOS multi-threaded firmware with tasks, queues, semaphores, mutexes, ISR-safe APIs, and interrupt-to-task synchronization. Cortex-M internals — NVIC, MPU, SysTick, register-level peripheral access.",
+      "Multi-threaded firmware with tasks, queues, semaphores, mutexes, ISR-safe APIs, and interrupt-to-task synchronization. Low-level architecture work across interrupts, memory protection, timing, and register-level access.",
     tags: ["FreeRTOS", "ARM Cortex-M", "RTOS Primitives", "ISR-safe", "Multi-threaded"],
   },
   {
-    title: "Connectivity & Cloud",
+    title: "Connected Device Workflows",
     description:
-      "CAN bus, BLE (Nordic / TI / Silicon Labs / ST stacks), cellular LTE-M & NB-IoT (Quectel modems), GPS/GNSS, AT-command parsers, MQTT/HTTPS over TLS — flowing into AWS IoT Core, Azure, and Athena telemetry pipelines.",
+      "Short-range, fieldbus, cellular, and location data paths from device firmware through secure telemetry pipelines, including AT-command parsers, encrypted transport, and cloud ingestion patterns.",
     tags: ["BLE", "CAN", "Cellular", "GNSS", "MQTT", "TLS/SSL", "AWS IoT", "Azure", "Athena"],
   },
   {
@@ -393,6 +393,45 @@ const techCards: TechCardData[] = [
     description:
       "PyTest and GoogleTest unit suites, Jenkins-driven regression across BLE / Cellular / GNSS / CAN, HIL testbeds for cyber-physical validation, power analysis, and GNSS simulation for repeatable field-condition coverage.",
     tags: ["PyTest", "GoogleTest", "Jenkins", "HIL", "Power Analysis", "GNSS Sim"],
+  },
+];
+
+const webTechCards: TechCardData[] = [
+  {
+    title: "Frontend Foundations",
+    description:
+      "Semantic markup, responsive styling, browser-side interaction, accessible UI states, and dashboard layouts for API-backed web applications.",
+    tags: ["HTML", "CSS", "JavaScript", "Responsive UI", "Accessibility", "Dashboards"],
+  },
+  {
+    title: "Application Interfaces",
+    description:
+      "Component-based application screens with routed views, reusable UI pieces, form flows, client-side state, and production-minded rendering boundaries.",
+    tags: ["React", "Next.js", "Angular", "Components", "Routing", "Forms"],
+  },
+  {
+    title: "Backend Services",
+    description:
+      "Server-side application logic, API handlers, integration layers, service structure, and maintainable workflows for data-backed product features.",
+    tags: ["Node.js", ".NET", ".NET Core", "C#", "Services", "Server-side"],
+  },
+  {
+    title: "REST API Integration",
+    description:
+      "REST API consumption and implementation patterns, request/response modeling, authentication-aware flows, error handling, retries, and frontend-to-backend data wiring.",
+    tags: ["REST", "API Integration", "Auth Flows", "Error Handling", "JSON", "HTTP"],
+  },
+  {
+    title: "Relational Data",
+    description:
+      "SQL Server and PostgreSQL usage for relational schemas, SQL queries, data-backed features, reporting needs, and application persistence patterns.",
+    tags: ["SQL Server", "PostgreSQL", "SQL", "Schemas", "Queries", "Persistence"],
+  },
+  {
+    title: "Full-stack Tooling",
+    description:
+      "Practical web application workflows spanning local development, build scripts, environment configuration, API debugging, deployment checks, and production readiness.",
+    tags: ["Builds", "Env Config", "Debugging", "Deployment", "Tooling", "Full-stack"],
   },
 ];
 
@@ -2406,6 +2445,85 @@ const SkillPythonIcon = ({ size = 18 }: SkillIconProps) => (
     <path d="M12.086 22c2.429 0 4.314-1.152 4.314-3.133V17.2H11.83v-.571h6.685C20.486 16.629 22 14.629 22 11.886c0-2.743-1.514-4.458-3.486-4.458h-1.143v1.772c0 2.171-1.657 3.6-3.829 3.6H8.514c-1.829 0-3.086 1.343-3.086 3.2v3.867C5.428 20.848 7.371 22 12.086 22zm1.6-2.114a.914.914 0 1 1 0-1.829.914.914 0 0 1 0 1.829z" fill="#FFD43B" />
   </svg>
 );
+const SkillRustIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="8.5" fill="none" stroke="#CE412B" strokeWidth="1.5" />
+    <path d="M8 8h5.2c1.8 0 3 1 3 2.5 0 1.1-.6 1.9-1.6 2.3l2 3.2h-2.4l-1.7-2.9H10v2.9H8z" fill="#CE412B" />
+    <path d="M10 11.4h3c.7 0 1.1-.3 1.1-.9s-.4-.9-1.1-.9h-3z" fill="#0A0C10" />
+    <path d="M12 1.8v2.1M12 20.1v2.1M1.8 12h2.1M20.1 12h2.1M4.8 4.8l1.5 1.5M17.7 17.7l1.5 1.5M19.2 4.8l-1.5 1.5M6.3 17.7l-1.5 1.5" stroke="#CE412B" strokeWidth="1" strokeLinecap="round" />
+  </svg>
+);
+const SkillCSharpIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2.5 20 7v10l-8 4.5L4 17V7z" fill="none" stroke="#9B4F96" strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="M14.6 9.5A3.65 3.65 0 0 0 12 8.4a3.6 3.6 0 1 0 2.6 6.1" fill="none" stroke="#9B4F96" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M16.2 10h3M16.2 13.8h3M17.1 9.1v5.6M18.5 9.1v5.6" stroke="#9B4F96" strokeWidth="1" strokeLinecap="round" />
+  </svg>
+);
+const SkillAssemblyIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="#E6A23C" strokeWidth="1.5" />
+    <path d="M8 16 11.6 8h1.1l3.3 8h-1.9l-.6-1.6h-3.2L9.7 16z" fill="#E6A23C" />
+    <path d="M10.9 12.8h2.1l-1-2.8z" fill="#0A0C10" />
+    <path d="M7 2.8v2M12 2.8v2M17 2.8v2M7 19.2v2M12 19.2v2M17 19.2v2" stroke="#E6A23C" strokeWidth="1" strokeLinecap="round" />
+  </svg>
+);
+const SkillShellIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="#4EAA25" strokeWidth="1.5" />
+    <path d="m7 9 3 3-3 3" fill="none" stroke="#4EAA25" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M12 15h5" stroke="#4EAA25" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+const SkillHtmlCssIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 3h6l-.5 16L7.5 21 4.8 19.2z" fill="none" stroke="#E34F26" strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M13 3h6l-1.1 16.2L15 21l-2.8-1.8z" fill="none" stroke="#1572B6" strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M7.2 8.2h2.3M7.1 12h2.2M14.8 8.2h2.2M14.6 12h2" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+  </svg>
+);
+const SkillJavaScriptIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="#F7DF1E" strokeWidth="1.5" />
+    <text x="12" y="15.3" textAnchor="middle" fontSize="7" fontWeight="800" fill="#F7DF1E" fontFamily="sans-serif">JS</text>
+  </svg>
+);
+const SkillReactNextIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="2" fill="#61DAFB" />
+    <ellipse cx="12" cy="12" rx="8.5" ry="3.2" fill="none" stroke="#61DAFB" strokeWidth="1.2" />
+    <ellipse cx="12" cy="12" rx="8.5" ry="3.2" fill="none" stroke="#61DAFB" strokeWidth="1.2" transform="rotate(60 12 12)" />
+    <ellipse cx="12" cy="12" rx="8.5" ry="3.2" fill="none" stroke="#61DAFB" strokeWidth="1.2" transform="rotate(120 12 12)" />
+    <path d="M16 6h2.5v12H16l-5-7.2V18H8.5V6H11l5 7.2z" fill="#fff" opacity="0.9" />
+  </svg>
+);
+const SkillAngularIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2.5 20 6l-1.3 11.2L12 21.5l-6.7-4.3L4 6z" fill="none" stroke="#DD0031" strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="m8 16 4-9 4 9M9.7 13h4.6" stroke="#DD0031" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+const SkillNodeIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2.8 20 7.3v9.4l-8 4.5-8-4.5V7.3z" fill="none" stroke="#5FA04E" strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="M8.3 15.8V8.2h2.1l3.3 4.8V8.2h2v7.6h-2.1l-3.3-4.7v4.7z" fill="#5FA04E" />
+  </svg>
+);
+const SkillRestIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5 8h9M5 16h9" stroke="#38BDF8" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="m15 5 4 3-4 3M15 13l4 3-4 3" fill="none" stroke="#38BDF8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="4" cy="8" r="1.2" fill="#38BDF8" />
+    <circle cx="4" cy="16" r="1.2" fill="#38BDF8" />
+  </svg>
+);
+const SkillDatabaseIcon = ({ size = 18 }: SkillIconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+    <ellipse cx="12" cy="6" rx="7" ry="3" fill="none" stroke="#336791" strokeWidth="1.5" />
+    <path d="M5 6v8c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 10c0 1.7 3.1 3 7 3s7-1.3 7-3" fill="none" stroke="#336791" strokeWidth="1.5" />
+    <path d="M8.5 20h7" stroke="#CC2927" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
 const SkillArmIcon = ({ size = 18 }: SkillIconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
     <rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="#0091BD" strokeWidth="1.5" />
@@ -2511,7 +2629,7 @@ const SkillCanIcon = ({ size = 18 }: SkillIconProps) => (
 );
 
 const skillsTimeline: RadialTimelineItem[] = [
-  // Inner ring — Languages
+  // Inner ring - Languages
   {
     id: 1,
     title: "C",
@@ -2519,7 +2637,7 @@ const skillsTimeline: RadialTimelineItem[] = [
     category: "Languages",
     content: "Daily driver across BSPs, peripheral drivers, ISRs, and FreeRTOS task code on STM32 and Silicon Labs.",
     icon: SkillCIcon,
-    relatedIds: [4, 5, 6, 7, 8],
+    relatedIds: [4, 5, 6, 7, 8, 15],
     status: "completed",
     energy: 95,
     color: "#A8B9CC",
@@ -2532,7 +2650,7 @@ const skillsTimeline: RadialTimelineItem[] = [
     category: "Languages",
     content: "Firmware abstractions, GoogleTest harnesses, and host-side tooling for ARM Cortex-M projects.",
     icon: SkillCppIcon,
-    relatedIds: [1, 4, 7],
+    relatedIds: [1, 4, 7, 13],
     status: "completed",
     energy: 88,
     color: "#00599C",
@@ -2545,22 +2663,61 @@ const skillsTimeline: RadialTimelineItem[] = [
     category: "Languages",
     content: "PyTest fixtures, Jenkins-driven HIL regressions, AWS-backed monitoring GUIs, and ML pipelines (PyTorch).",
     icon: SkillPythonIcon,
-    relatedIds: [11, 12],
+    relatedIds: [11, 12, 16],
     status: "completed",
     energy: 90,
     color: "#FFD43B",
     ring: 0,
   },
+  {
+    id: 13,
+    title: "Rust",
+    date: "Languages",
+    category: "Languages",
+    content: "Memory-safe systems programming for embedded experiments, CLI tooling, and performance-sensitive service components.",
+    icon: SkillRustIcon,
+    relatedIds: [2, 4, 8, 15, 16],
+    status: "in-progress",
+    energy: 72,
+    color: "#CE412B",
+    ring: 0,
+  },
+  {
+    id: 15,
+    title: "Assembly",
+    date: "Low-level",
+    category: "Languages",
+    content: "Instruction-level debugging, startup paths, ABI details, and Cortex-M bring-up work where C meets the hardware.",
+    icon: SkillAssemblyIcon,
+    relatedIds: [1, 4, 8, 9, 13],
+    status: "completed",
+    energy: 78,
+    color: "#E6A23C",
+    ring: 0,
+  },
+  {
+    id: 16,
+    title: "Bash/Shell",
+    date: "Tooling",
+    category: "Languages",
+    content: "Build scripts, flashing workflows, CI helpers, log parsing, and repeatable firmware test automation.",
+    icon: SkillShellIcon,
+    relatedIds: [3, 8, 12, 13],
+    status: "completed",
+    energy: 86,
+    color: "#4EAA25",
+    ring: 0,
+  },
 
-  // Middle ring — Architecture, RTOS, cross-platform protocols
+  // Middle ring - Architecture, RTOS, cross-platform protocols
   {
     id: 4,
     title: "ARM Cortex-M",
     date: "Architecture",
     category: "Architecture",
-    content: "Cortex-M internals — NVIC, MPU, SysTick, SWD debugging, AHB/APB bus topology, register-level work.",
+    content: "Cortex-M internals: NVIC, MPU, SysTick, SWD debugging, AHB/APB bus topology, register-level work.",
     icon: SkillArmIcon,
-    relatedIds: [1, 2, 5, 7, 8],
+    relatedIds: [1, 2, 5, 7, 8, 13, 15],
     status: "completed",
     energy: 92,
     color: "#0091BD",
@@ -2584,7 +2741,7 @@ const skillsTimeline: RadialTimelineItem[] = [
     title: "BLE Stack",
     date: "Connectivity",
     category: "Connectivity",
-    content: "BLE 5.x — GATT services, advertising, and pairing across Nordic SoftDevice, TI BLE-Stack, Silicon Labs Bluetooth, and ST BlueNRG.",
+    content: "BLE 5.x: GATT services, advertising, and pairing across Nordic SoftDevice, TI BLE-Stack, Silicon Labs Bluetooth, and ST BlueNRG.",
     icon: SkillBleIcon,
     relatedIds: [1, 7, 8, 9, 10],
     status: "completed",
@@ -2597,7 +2754,7 @@ const skillsTimeline: RadialTimelineItem[] = [
     title: "CAN Bus",
     date: "Connectivity",
     category: "Connectivity",
-    content: "CAN controllers and peripheral drivers built from scratch — bxCAN/FDCAN, mailboxes, filters, error handling.",
+    content: "CAN controllers and peripheral drivers built from scratch: bxCAN/FDCAN, mailboxes, filters, error handling.",
     icon: SkillCanIcon,
     relatedIds: [1, 4, 8, 11],
     status: "completed",
@@ -2606,15 +2763,15 @@ const skillsTimeline: RadialTimelineItem[] = [
     ring: 1,
   },
 
-  // Outer ring — Vendor platforms + cloud
+  // Outer ring - Vendor platforms + cloud
   {
     id: 8,
     title: "STM32",
     date: "Platform",
     category: "Platform",
-    content: "F/L/U series — HAL, LL, bare-metal. DMA, clock-tree (HSI/HSE/PLL), AHB/APB prescalers, UART/SPI/I²C/CAN/ADC.",
+    content: "F/L/U series: HAL, LL, bare-metal. DMA, clock-tree (HSI/HSE/PLL), AHB/APB prescalers, UART/SPI/I2C/CAN/ADC.",
     icon: SkillStm32Icon,
-    relatedIds: [1, 4, 5, 6, 7, 9],
+    relatedIds: [1, 4, 5, 6, 7, 9, 15, 16],
     status: "completed",
     energy: 95,
     color: "#0099E0",
@@ -2625,9 +2782,9 @@ const skillsTimeline: RadialTimelineItem[] = [
     title: "Silicon Labs",
     date: "Platform",
     category: "Platform",
-    content: "EFR32 (BLE/Zigbee/Thread) and EFM32 — Simplicity SDK, peripheral drivers, EM0–EM4 power modes, board bring-up.",
+    content: "EFR32 (BLE/Zigbee/Thread) and EFM32: Simplicity SDK, peripheral drivers, EM0-EM4 power modes, board bring-up.",
     icon: SkillSiLabsIcon,
-    relatedIds: [1, 4, 5, 6, 8],
+    relatedIds: [1, 4, 5, 6, 8, 15],
     status: "completed",
     energy: 90,
     color: "#00B5E2",
@@ -2638,7 +2795,7 @@ const skillsTimeline: RadialTimelineItem[] = [
     title: "Nordic",
     date: "Platform",
     category: "Platform",
-    content: "nRF5 SDK and nRF Connect SDK (Zephyr) — SoftDevice integration, GATT services, peripheral & central roles.",
+    content: "nRF5 SDK and nRF Connect SDK (Zephyr): SoftDevice integration, GATT services, peripheral and central roles.",
     icon: SkillNordicIcon,
     relatedIds: [1, 4, 6],
     status: "completed",
@@ -2651,7 +2808,7 @@ const skillsTimeline: RadialTimelineItem[] = [
     title: "TI",
     date: "Platform",
     category: "Platform",
-    content: "Texas Instruments BLE platforms — TI BLE-Stack, SimpleLink SDK, sensor controller, wireless peripheral roles.",
+    content: "Texas Instruments BLE platforms: TI BLE-Stack, SimpleLink SDK, sensor controller, wireless peripheral roles.",
     icon: SkillTiIcon,
     relatedIds: [1, 4, 6, 7],
     status: "completed",
@@ -2666,7 +2823,7 @@ const skillsTimeline: RadialTimelineItem[] = [
     category: "Cloud",
     content: "AWS IoT Core with MQTT/HTTPS over TLS, device shadows, certificate provisioning, fleet patterns, Athena telemetry.",
     icon: SkillAwsIcon,
-    relatedIds: [3, 6, 8],
+    relatedIds: [3, 6, 8, 16],
     status: "completed",
     energy: 80,
     color: "#FF9900",
@@ -2674,20 +2831,161 @@ const skillsTimeline: RadialTimelineItem[] = [
   },
 ];
 
+const webSkillRingMeta: readonly RadialTimelineRingMeta[] = [
+  { label: "Frontend", caption: "Web foundations", color: "rgba(247, 223, 30, 0.9)" },
+  { label: "Frameworks", caption: "UI platforms", color: "rgba(97, 218, 251, 0.9)" },
+  { label: "Backend", caption: "APIs + data", color: "rgba(95, 160, 78, 0.9)" },
+] as const;
+
+const webSkillsTimeline: RadialTimelineItem[] = [
+  {
+    id: 1,
+    title: "HTML/CSS",
+    date: "Frontend",
+    category: "Frontend",
+    content: "Semantic markup, responsive layouts, accessibility-aware interfaces, and polished CSS interaction details.",
+    icon: SkillHtmlCssIcon,
+    relatedIds: [2, 3, 4],
+    status: "completed",
+    energy: 86,
+    color: "#E34F26",
+    ring: 0,
+  },
+  {
+    id: 2,
+    title: "JavaScript",
+    date: "Frontend",
+    category: "Frontend",
+    content: "Browser-side application logic, API-driven UI state, form flows, data shaping, and interactive product surfaces.",
+    icon: SkillJavaScriptIcon,
+    relatedIds: [1, 3, 4, 5, 7],
+    status: "completed",
+    energy: 84,
+    color: "#F7DF1E",
+    ring: 0,
+  },
+  {
+    id: 3,
+    title: "React/Next.js",
+    date: "Frameworks",
+    category: "Frameworks",
+    content: "Component-driven UIs, Next.js application structure, routed pages, server/client boundaries, and production builds.",
+    icon: SkillReactNextIcon,
+    relatedIds: [1, 2, 5, 7, 8],
+    status: "completed",
+    energy: 82,
+    color: "#61DAFB",
+    ring: 1,
+  },
+  {
+    id: 4,
+    title: "Angular",
+    date: "Frameworks",
+    category: "Frameworks",
+    content: "Structured frontend applications with components, services, forms, routing, and API-backed dashboard workflows.",
+    icon: SkillAngularIcon,
+    relatedIds: [1, 2, 7],
+    status: "completed",
+    energy: 76,
+    color: "#DD0031",
+    ring: 1,
+  },
+  {
+    id: 5,
+    title: "Node.js",
+    date: "Backend",
+    category: "Backend",
+    content: "Server-side JavaScript for API handlers, automation services, integration glue, and data-processing utilities.",
+    icon: SkillNodeIcon,
+    relatedIds: [2, 3, 7, 8],
+    status: "completed",
+    energy: 80,
+    color: "#5FA04E",
+    ring: 2,
+  },
+  {
+    id: 6,
+    title: ".NET/C#",
+    date: "Backend",
+    category: "Backend",
+    content: ".NET and .NET Core application work with C#, service structure, backend workflows, and database-backed features.",
+    icon: SkillCSharpIcon,
+    relatedIds: [7, 8],
+    status: "completed",
+    energy: 76,
+    color: "#9B4F96",
+    ring: 2,
+  },
+  {
+    id: 7,
+    title: "REST APIs",
+    date: "Integration",
+    category: "Backend",
+    content: "REST API integration, request/response modeling, authentication flows, error handling, and frontend data wiring.",
+    icon: SkillRestIcon,
+    relatedIds: [2, 3, 4, 5, 6, 8],
+    status: "completed",
+    energy: 84,
+    color: "#38BDF8",
+    ring: 2,
+  },
+  {
+    id: 8,
+    title: "SQL Server/PostgreSQL",
+    date: "Data",
+    category: "Backend",
+    content: "Relational schemas, SQL querying, data-backed application features, and practical SQL Server/PostgreSQL usage.",
+    icon: SkillDatabaseIcon,
+    relatedIds: [3, 5, 6, 7],
+    status: "completed",
+    energy: 78,
+    color: "#336791",
+    ring: 2,
+  },
+];
+
 function TechStack() {
+  const [activeSkillOrbit, setActiveSkillOrbit] = useState<"embedded" | "web">("embedded");
+  const activeTimeline = activeSkillOrbit === "embedded" ? skillsTimeline : webSkillsTimeline;
+  const activeRingMeta = activeSkillOrbit === "embedded" ? undefined : webSkillRingMeta;
+  const activeTechCards = activeSkillOrbit === "embedded" ? techCards : webTechCards;
+  const activeSkillSubtitle =
+    activeSkillOrbit === "embedded"
+      ? "Low-level firmware, connectivity, silicon platforms, and test automation"
+      : "Frontend frameworks, backend services, REST integrations, and relational data";
+
   return (
-    <section className="section page">
+    <section className="section page" id="stack">
       <SectionHeading
         label="// stack"
         title="Tech Stack & Capabilities"
         subtitle="Tools, platforms, and protocols I work with most"
       />
+      <div className="skill-orbit-tabs" aria-label="Skill orbit category">
+        <button
+          type="button"
+          className={activeSkillOrbit === "embedded" ? "is-active" : ""}
+          aria-pressed={activeSkillOrbit === "embedded"}
+          onClick={() => setActiveSkillOrbit("embedded")}
+        >
+          Embedded Systems
+        </button>
+        <button
+          type="button"
+          className={activeSkillOrbit === "web" ? "is-active" : ""}
+          aria-pressed={activeSkillOrbit === "web"}
+          onClick={() => setActiveSkillOrbit("web")}
+        >
+          Web & Backend
+        </button>
+      </div>
+      <p className="skill-orbit-subtitle">{activeSkillSubtitle}</p>
       <div className="techstack-split">
         <div className="tech-orbit-wrap">
-          <RadialOrbitalTimeline timelineData={skillsTimeline} />
+          <RadialOrbitalTimeline key={activeSkillOrbit} timelineData={activeTimeline} ringMeta={activeRingMeta} />
         </div>
         <div className="tech-grid">
-          {techCards.map((card, index) => (
+          {activeTechCards.map((card, index) => (
             <TechCard key={card.title} card={card} delay={index * 0.08} />
           ))}
         </div>
