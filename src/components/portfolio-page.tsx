@@ -823,11 +823,10 @@ function CircuitCanvas() {
 
     const draw = () => {
       tick += 1;
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
 
       const width = canvas.width;
       const height = canvas.height;
+      context.clearRect(0, 0, width, height);
       const nodeX = (value: { gx: number }) => (value.gx / columns) * width;
       const nodeY = (value: { gy: number }) => (value.gy / rows) * height;
 
@@ -971,13 +970,17 @@ function Hero({ totalCitations }: { totalCitations: number }) {
 
   const headline = useMemo(() => {
     const text = "Firmware engineer with 4+ years\nbuilding production IoT platforms";
+    const accentWords = new Set(["production", "IoT", "platforms"]);
     const output: React.ReactNode[] = [];
     let visibleIndex = 0;
 
     text.split("\n").forEach((line, lineIndex) => {
       line.split(" ").forEach((word, wordIndex, words) => {
         output.push(
-          <span key={`word-${lineIndex}-${wordIndex}`} className="headline-word">
+          <span
+            key={`word-${lineIndex}-${wordIndex}`}
+            className={`headline-word${accentWords.has(word) ? " is-accent" : ""}`}
+          >
             {word.split("").map((character, characterIndex) => {
               const node = (
                 <span
@@ -1025,10 +1028,23 @@ function Hero({ totalCitations }: { totalCitations: number }) {
         <div className="hero-avatar-stage">
           <div className="hero-avatar-halo" style={avatarParallax.halo} />
           <div className="hero-avatar-orbit" style={avatarParallax.orbit} />
+          <div className="hero-avatar-sweep" />
           <div className="hero-avatar-wrap">
             <img src="/uploads/avatar.webp" alt="Syed Raqueed" className="hero-avatar" />
           </div>
+          <div className="hero-float-card hero-float-card-right">
+            <span className="hero-float-label">stack</span>
+            <strong>STM32 · FreeRTOS · BLE</strong>
+          </div>
+          <div className="hero-float-card hero-float-card-left">
+            <span className="hero-float-label">focus</span>
+            <strong>BSP · Drivers · OTA</strong>
+          </div>
         </div>
+        <span className="hero-badge">
+          <span className="badge-dot" />
+          Open to embedded &amp; platform roles
+        </span>
         <h1 className="hero-title">{headline}</h1>
         <p className="hero-subline">
           {typed}
@@ -1084,6 +1100,10 @@ function Hero({ totalCitations }: { totalCitations: number }) {
           </a>
         </div>
       </div>
+      <a href="#stack" className="scroll-hint" aria-label="Scroll to tech stack">
+        <span>scroll</span>
+        <span className="scroll-line" />
+      </a>
     </section>
   );
 }
