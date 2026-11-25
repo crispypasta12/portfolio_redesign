@@ -42,10 +42,14 @@ type EducationItem = {
   name: string;
   logo: string;
   degree: string;
+  gpa: string;
+  honors?: string;
   thesis: string;
+  thesisLink: { label: string; href: string; external?: boolean };
 };
 
 type Publication = {
+  kind: "conference" | "thesis";
   title: string;
   authors: string;
   venue: string;
@@ -84,7 +88,7 @@ const navItems = [
   ["hero", "Home"],
   ["work", "Work"],
   ["experience", "Experience"],
-  ["about", "About"],
+  ["about", "Education"],
   ["publications", "Research"],
   ["hobbies", "Hobbies & Life"],
   ["contact", "Contact"],
@@ -506,25 +510,35 @@ const education: EducationItem[] = [
     name: "Texas A&M University - Kingsville",
     logo: "/uploads/studies_A_and_M.webp",
     degree: "M.S. Electrical & Electronics Engineering, 2020-2022",
+    gpa: "3.80 / 4.00",
+    honors: "Dean's Scholarship",
     thesis: "Thesis: AI-Based Ransomware Detection for Digital Substations",
+    thesisLink: { label: "Download thesis", href: "/uploads/Master%27s%20Thesis.pdf" },
   },
   {
     name: "American International University-Bangladesh (AIUB)",
     logo: "/uploads/studies_aiub.webp",
     degree: "B.S. Electrical & Electronics Engineering, 2016-2020",
+    gpa: "3.45 / 4.00",
     thesis: "Thesis: On-body Humidity Sensing Antenna for BAN Applications over 5G Networks",
+    thesisLink: {
+      label: "Published at IEEE IEMTRONICS 2020",
+      href: "https://doi.org/10.1109/IEMTRONICS51293.2020.9216331",
+      external: true,
+    },
   },
 ];
 
 const publications: Publication[] = [
   {
+    kind: "conference",
     title:
       "Ransomware Attack Modeling and Artificial Intelligence-Based Ransomware Detection for Digital Substations",
     authors: "S. R. B. Alvee, B. Ahn, T. Kim, Y. Su, Y. Youn, M. Ryu",
     venue: "IEEE Workshop on the Electronic Grid (eGRID)",
     location: "New Orleans, LA, USA",
     year: "2021",
-    citations: 43,
+    citations: 46,
     doi: "https://doi.org/10.1109/eGRID52793.2021.9662158",
     funding: "DOE (DE-EE0009026) | NSF (EEC-1359414) | KERI",
     abstract:
@@ -532,13 +546,14 @@ const publications: Publication[] = [
     keywords: ["AI", "CNN", "cybersecurity", "smart grid", "ransomware"],
   },
   {
+    kind: "conference",
     title:
       "Device-Centric Firmware Malware Detection for Smart Inverters using Deep Transfer Learning",
     authors: "S. R. B. Alvee, B. Ahn, S. Ahmad, K.-T. Kim, T. Kim, J. Zeng",
     venue: "IEEE Design Methodologies Conference (DMC)",
     location: "Bath, United Kingdom",
     year: "2022",
-    citations: 15,
+    citations: 18,
     doi: "https://doi.org/10.1109/DMC55175.2022.9906538",
     funding: null,
     abstract:
@@ -546,13 +561,14 @@ const publications: Publication[] = [
     keywords: ["deep transfer learning", "firmware security", "malware", "smart inverter"],
   },
   {
+    kind: "conference",
     title:
       "Advanced Persistent Threat (APT)-Style Attack Modeling and Testbed for Power Transformer Diagnosis System in a Substation",
     authors: "S. Ahmad, B. Ahn, S. R. B. Alvee, D. Trevino, T. Kim, Y. Youn, M. H. Ryu",
     venue: "IEEE Power & Energy Society ISGT",
     location: "New Orleans, LA, USA",
     year: "2022",
-    citations: 13,
+    citations: 14,
     doi: "https://doi.org/10.1109/ISGT50606.2022.9817518",
     funding: "Korea Electrotechnology Research Institute (KERI)",
     abstract:
@@ -560,12 +576,13 @@ const publications: Publication[] = [
     keywords: ["APT", "digital substation", "cybersecurity", "attack modeling", "testbed"],
   },
   {
+    kind: "conference",
     title: "Ransomware Security Threat Modeling for Photovoltaic Systems",
     authors: "Y. Su, B. Ahn, S. R. B. Alvee, T. Kim, J. Choi, S. C. Smith",
     venue: "IEEE Workshop on the Electronic Grid (eGRID)",
     location: "New Orleans, LA, USA",
     year: "2021",
-    citations: 13,
+    citations: 14,
     doi: "https://doi.org/10.1109/eGRID52793.2021.9662163",
     funding: "NSF (EEC-1359414)",
     abstract:
@@ -573,6 +590,7 @@ const publications: Publication[] = [
     keywords: ["PV systems", "ransomware", "HIL", "threat modeling", "penetration testing"],
   },
   {
+    kind: "conference",
     title:
       "On-Body Humidity Sensing Antenna with Polyimide for BAN Applications over 5G Networks",
     authors: "M. M. Rahman, M. A. Nayeem, S. Nahid, S. R. Bin Alvee, R. R. Hasan, M. A. Rahman",
@@ -587,6 +605,7 @@ const publications: Publication[] = [
     keywords: ["5G", "antenna", "humidity sensing", "wearable", "mm-wave", "BAN"],
   },
   {
+    kind: "thesis",
     title:
       "Study on Artificial Intelligence-Based Ransomware Detection for Digital Substations",
     authors: "S. R. B. Alvee",
@@ -618,6 +637,42 @@ function renderPublicationAuthors(authors: string) {
     ),
   );
 }
+
+function isFirstAuthor(publication: Publication) {
+  const first = publication.authors.split(",")[0].trim();
+  return publication.kind === "conference" && selfAuthorExactPattern.test(first);
+}
+
+function buildBibtex(publication: Publication) {
+  const key = `alvee${publication.year}${publication.title.split(/\s+/)[0].toLowerCase().replace(/\W/g, "")}`;
+  const isThesis = publication.kind === "thesis";
+  const fields: [string, string][] = [
+    ["author", publication.authors.split(", ").join(" and ")],
+    ["title", publication.title],
+    isThesis ? ["school", "Texas A\\&M University-Kingsville"] : ["booktitle", publication.venue],
+    ["year", publication.year],
+  ];
+  if (publication.doi) fields.push(["doi", publication.doi.replace("https://doi.org/", "")]);
+
+  return `@${isThesis ? "mastersthesis" : "inproceedings"}{${key},\n${fields
+    .map(([name, value]) => `  ${name} = {${value}},`)
+    .join("\n")}\n}`;
+}
+
+// Every headline number is derived from the data above so they cannot drift apart.
+const publicationStats = (() => {
+  const papers = publications.filter((item) => item.kind === "conference");
+  const counts = papers.map((item) => item.citations ?? 0).sort((a, b) => b - a);
+
+  return {
+    papers: papers.length,
+    citations: counts.reduce((sum, value) => sum + value, 0),
+    hIndex: counts.filter((value, index) => value >= index + 1).length,
+    i10Index: counts.filter((value) => value >= 10).length,
+    firstAuthor: papers.filter(isFirstAuthor).length,
+    asOf: "Nov 2026",
+  };
+})();
 
 const hobbies = [
   {
@@ -1104,7 +1159,7 @@ function Hero({ totalCitations }: { totalCitations: number }) {
           </span>
           <span className="dot-separator" />
           <span>
-            <strong>5</strong> papers
+            <strong>{publicationStats.papers}</strong> papers
           </span>
           <span className="dot-separator" />
           <span>
@@ -3047,6 +3102,71 @@ function TechStack() {
   );
 }
 
+function CopyBibtexButton({ publication }: { publication: Publication }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(buildBibtex(publication));
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <button type="button" className="inline-link publication-cite" onClick={copy} aria-live="polite">
+      {copied ? "Copied BibTeX" : "Copy BibTeX"}
+    </button>
+  );
+}
+
+const researchThemes = ["Cyber-physical security", "Smart-grid cybersecurity", "ML for malware detection", "HIL security testbeds"];
+
+function ResearchFocus() {
+  return (
+    <Reveal>
+      <div className="research-focus">
+        <div className="research-focus-copy">
+          <span className="research-focus-label">Research focus</span>
+          <p>
+            My research sits at the intersection of cyber-physical security and machine learning:
+            modeling attacks on smart-grid infrastructure, building hardware-in-the-loop security
+            testbeds, and detecting malware in firmware and binaries with CNNs and transfer
+            learning.
+          </p>
+          <div className="tag-row">
+            {researchThemes.map((theme) => (
+              <span key={theme} className="tag">
+                {theme}
+              </span>
+            ))}
+          </div>
+          <span className="research-in-progress">
+            <span className="badge-dot" />
+            In preparation: book chapter
+          </span>
+        </div>
+        <ul className="research-results">
+          <li>
+            <strong>98%</strong>
+            <span>firmware malware detection accuracy on smart inverters</span>
+          </li>
+          <li>
+            <strong>96.22%</strong>
+            <span>ransomware detection accuracy with a CNN on binary images</span>
+          </li>
+          <li>
+            <strong>DOE · NSF · KERI</strong>
+            <span>funding behind the research</span>
+          </li>
+        </ul>
+      </div>
+    </Reveal>
+  );
+}
+
 function Publications({ totalCitations }: { totalCitations: number }) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
@@ -3054,27 +3174,32 @@ function Publications({ totalCitations }: { totalCitations: number }) {
     <section className="section page" id="publications">
       <SectionHeading
         label="// research"
-        title="Publications"
+        title="Research & Publications"
         subtitle="IEEE peer-reviewed work on cybersecurity, AI, and embedded systems"
       />
+      <ResearchFocus />
       <div className="publication-stats">
         <div>
           <span className="publication-stat-number">{totalCitations}</span>
           <span className="publication-stat-label">total citations</span>
         </div>
         <div>
-          <span className="publication-stat-number">6</span>
-          <span className="publication-stat-label">papers & thesis</span>
+          <span className="publication-stat-number">{publicationStats.papers}</span>
+          <span className="publication-stat-label">papers + thesis</span>
         </div>
         <div>
-          <span className="publication-stat-number">5</span>
+          <span className="publication-stat-number">{publicationStats.hIndex}</span>
           <span className="publication-stat-label">h-index</span>
         </div>
         <div>
-          <span className="publication-stat-number">4</span>
+          <span className="publication-stat-number">{publicationStats.i10Index}</span>
           <span className="publication-stat-label">i10-index</span>
         </div>
       </div>
+      <p className="publication-stats-note">
+        Citation counts per Google Scholar, {publicationStats.asOf}. First author on{" "}
+        {publicationStats.firstAuthor} of {publicationStats.papers} papers.
+      </p>
       <div className="publication-list">
         {publications.map((publication, index) => {
           const isOpen = expandedIndex === index;
@@ -3092,6 +3217,14 @@ function Publications({ totalCitations }: { totalCitations: number }) {
                 >
                   <span className="publication-main">
                     <span className="publication-copy">
+                      <span className="publication-badges">
+                        <span className="publication-badge">
+                          {publication.kind === "thesis" ? "M.S. thesis" : "Conference paper"}
+                        </span>
+                        {isFirstAuthor(publication) ? (
+                          <span className="publication-badge is-first-author">First author</span>
+                        ) : null}
+                      </span>
                       <span className="publication-title">{publication.title}</span>
                       <span className="publication-authors">{renderPublicationAuthors(publication.authors)}</span>
                       <span className="publication-meta">
@@ -3134,11 +3267,14 @@ function Publications({ totalCitations }: { totalCitations: number }) {
                         </span>
                       ))}
                     </div>
-                    {publication.doi ? (
-                      <a href={publication.doi} target="_blank" rel="noreferrer" className="inline-link">
-                        View on IEEE Xplore
-                      </a>
-                    ) : null}
+                    <div className="publication-links">
+                      {publication.doi ? (
+                        <a href={publication.doi} target="_blank" rel="noreferrer" className="inline-link">
+                          View on IEEE Xplore
+                        </a>
+                      ) : null}
+                      <CopyBibtexButton publication={publication} />
+                    </div>
                   </div>
                 ) : null}
               </article>
@@ -3217,10 +3353,23 @@ function Education() {
                 <div className="education-head">
                   <h3>{item.name}</h3>
                   <p className="education-degree">{item.degree}</p>
+                  <div className="tag-row education-chips">
+                    <span className="tag">GPA {item.gpa}</span>
+                    {item.honors ? <span className="tag education-honor">{item.honors}</span> : null}
+                  </div>
                 </div>
                 <div className="education-thesis-block">
                   <span className="education-thesis-label">Thesis</span>
                   <p className="education-thesis">{item.thesis.replace(/^Thesis:\s*/, "")}</p>
+                  <a
+                    href={item.thesisLink.href}
+                    className="inline-link"
+                    {...(item.thesisLink.external
+                      ? { target: "_blank", rel: "noreferrer" }
+                      : { download: true })}
+                  >
+                    {item.thesisLink.label}
+                  </a>
                 </div>
               </div>
             </article>
@@ -3341,7 +3490,7 @@ export function PortfolioPage() {
   const activeSection = useActiveSection(sectionIds);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-  const totalCitations = publications.reduce((sum, pub) => sum + (pub.citations ?? 0), 0);
+  const totalCitations = publicationStats.citations;
 
   useEffect(() => {
     if (!isMobileNavOpen) return;
