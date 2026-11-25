@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+
+const sans = Space_Grotesk({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Syed Raqueed | Embedded Firmware Engineer",
@@ -40,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
       <body suppressHydrationWarning>
         {children}
         <Analytics />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { BGPattern } from "@/components/ui/bg-pattern";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
@@ -66,6 +67,11 @@ type Testimonial = {
   role: string;
   image: string;
 };
+
+/** Ask Cloudinary for a width-limited rendition instead of the 2000px original. */
+function cloudinaryResize(url: string, width: number) {
+  return url.replace("/upload/f_auto,q_auto/", `/upload/f_auto,q_auto,c_limit,w_${width}/`);
+}
 
 const typedPhrases = [
   "I'm Raqueed - Embedded Firmware Engineer",
@@ -751,27 +757,26 @@ function useActiveSection(ids: string[]) {
   const [active, setActive] = useState(ids[0]);
 
   useEffect(() => {
-    const update = () => {
-      const scrollY = window.scrollY;
-      const triggerPoint = scrollY + window.innerHeight * 0.4;
-      let current = ids[0];
-      for (const id of ids) {
-        const el = document.getElementById(id);
-        if (el) {
-          const top = el.getBoundingClientRect().top + scrollY;
-          if (top <= triggerPoint) current = id;
-        }
-      }
-      setActive(current);
-    };
+    const visible = new Set<string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        });
+        // Last section (in page order) crossing the 40% line wins; hold previous value in gaps.
+        const current = [...ids].reverse().find((id) => visible.has(id));
+        if (current) setActive(current);
+      },
+      { rootMargin: "-40% 0px -55% 0px" },
+    );
 
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update, { passive: true });
-    update();
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
   }, [ids]);
 
   return active;
@@ -793,9 +798,15 @@ function CircuitCanvas() {
     const rows = 9;
     type GridNode = { gx: number; gy: number; phase: number };
 
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let isRunning = false;
+    let isOnScreen = true;
+    let dpr = 1;
+
     const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
     };
 
     resize();
@@ -824,8 +835,9 @@ function CircuitCanvas() {
     const draw = () => {
       tick += 1;
 
-      const width = canvas.width;
-      const height = canvas.height;
+      const width = canvas.width / dpr;
+      const height = canvas.height / dpr;
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
       context.clearRect(0, 0, width, height);
       const nodeX = (value: { gx: number }) => (value.gx / columns) * width;
       const nodeY = (value: { gy: number }) => (value.gy / rows) * height;
@@ -883,13 +895,36 @@ function CircuitCanvas() {
         }
       });
 
-      animationFrame = window.requestAnimationFrame(draw);
+      if (isRunning) animationFrame = window.requestAnimationFrame(draw);
     };
 
-    draw();
+    const start = () => {
+      if (isRunning || reduceMotion || !isOnScreen || document.hidden) return;
+      isRunning = true;
+      animationFrame = window.requestAnimationFrame(draw);
+    };
+    const stop = () => {
+      isRunning = false;
+      window.cancelAnimationFrame(animationFrame);
+    };
+
+    const observer = new IntersectionObserver(([entry]) => {
+      isOnScreen = entry.isIntersecting;
+      if (isOnScreen) start();
+      else stop();
+    });
+    observer.observe(canvas);
+
+    const onVisibility = () => (document.hidden ? stop() : start());
+    document.addEventListener("visibilitychange", onVisibility);
+
+    draw(); // single static frame (also the only frame under reduced motion)
+    start();
 
     return () => {
-      window.cancelAnimationFrame(animationFrame);
+      stop();
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", resize);
     };
   }, []);
@@ -942,31 +977,27 @@ function SectionHeading({
 function Hero({ totalCitations }: { totalCitations: number }) {
   const typed = useTypewriter(typedPhrases, 50);
   const heroRef = useRef<HTMLElement | null>(null);
-  const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
 
+  // Pointer position goes straight to CSS variables so mouse movement never re-renders React.
   const onMove = useCallback((event: React.MouseEvent<HTMLElement>) => {
-    const bounds = heroRef.current?.getBoundingClientRect();
-    if (!bounds) return;
+    const node = heroRef.current;
+    if (!node) return;
+    const bounds = node.getBoundingClientRect();
 
-    setMouse({
-      x: (event.clientX - bounds.left) / bounds.width,
-      y: (event.clientY - bounds.top) / bounds.height,
-    });
+    node.style.setProperty("--mx", String((event.clientX - bounds.left) / bounds.width));
+    node.style.setProperty("--my", String((event.clientY - bounds.top) / bounds.height));
   }, []);
 
-  const avatarParallax = useMemo(() => {
-    const dx = (mouse.x - 0.5) * 2;
-    const dy = (mouse.y - 0.5) * 2;
-
-    return {
-      halo: {
-        transform: `translate3d(${dx * 10}px, ${dy * 10}px, 0) scale(1.02)`,
-      },
-      orbit: {
-        transform: `translate3d(${dx * -6}px, ${dy * -6}px, 0)`,
-      },
-    };
-  }, [mouse.x, mouse.y]);
+  const avatarParallax = {
+    halo: {
+      transform:
+        "translate3d(calc((var(--mx, 0.5) - 0.5) * 20px), calc((var(--my, 0.5) - 0.5) * 20px), 0) scale(1.02)",
+    },
+    orbit: {
+      transform:
+        "translate3d(calc((var(--mx, 0.5) - 0.5) * -12px), calc((var(--my, 0.5) - 0.5) * -12px), 0)",
+    },
+  };
 
   const headline = useMemo(() => {
     const text = "Firmware engineer with 4+ years\nbuilding production IoT platforms";
@@ -1021,7 +1052,8 @@ function Hero({ totalCitations }: { totalCitations: number }) {
       <div
         className="hero-spotlight"
         style={{
-          background: `radial-gradient(650px circle at ${mouse.x * 100}% ${mouse.y * 100}%, rgba(210,140,0,0.07), transparent 70%)`,
+          background:
+            "radial-gradient(650px circle at calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), rgba(210,140,0,0.07), transparent 70%)",
         }}
       />
       <div className="hero-content">
@@ -1030,7 +1062,7 @@ function Hero({ totalCitations }: { totalCitations: number }) {
           <div className="hero-avatar-orbit" style={avatarParallax.orbit} />
           <div className="hero-avatar-sweep" />
           <div className="hero-avatar-wrap">
-            <img src="/uploads/avatar.webp" alt="Syed Raqueed" className="hero-avatar" />
+            <Image src="/uploads/avatar.webp" alt="Syed Raqueed" className="hero-avatar" width={654} height={690} sizes="(max-width: 640px) 100px, 172px" priority />
           </div>
           <div className="hero-float-card hero-float-card-right">
             <span className="hero-float-label">stack</span>
@@ -2353,7 +2385,8 @@ function Highlights() {
               <DmaProjectHighlight />
             ) : (
               <article className="carousel-main">
-                <img key={active.image} src={active.image} alt={active.title} className="carousel-image" />
+                {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary already serves a resized, auto-format rendition */}
+                <img key={active.image} src={cloudinaryResize(active.image, 1200)} alt={active.title} className="carousel-image" width={1200} height={800} loading="lazy" decoding="async" />
                 <div className="carousel-body">
                   <h3>{active.title}</h3>
                   <p>{active.blurb}</p>
@@ -3131,7 +3164,7 @@ function Experience() {
             <GlowCard as="article" className="experience-card" glowColor="amber" customSize>
               <header className="experience-header">
                 <div className="logo-shell logo-wide">
-                  <img src={company.logo} alt={company.company} />
+                  <Image src={company.logo} alt={company.company} width={216} height={216} sizes="108px" />
                 </div>
                 <div>
                   <h3 className="experience-company">{company.company}</h3>
@@ -3177,7 +3210,7 @@ function Education() {
               <div className="education-accent" />
               <div className="education-column">
                 <div className="logo-shell education-logo-shell">
-                  <img src={item.logo} alt={item.name} />
+                  <Image src={item.logo} alt={item.name} width={192} height={192} sizes="96px" />
                 </div>
               </div>
               <div className="education-card-body">
@@ -3210,7 +3243,8 @@ function Hobbies() {
         <div className="hobbies-grid">
           {hobbies.map((hobby) => (
             <article key={hobby.title} className="hobby-card">
-              <img src={hobby.image} alt={hobby.title} className="hobby-image" />
+              {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary already serves a resized, auto-format rendition */}
+              <img src={cloudinaryResize(hobby.image, 800)} alt={hobby.title} className="hobby-image" width={800} height={533} loading="lazy" decoding="async" />
               <div className="hobby-overlay" />
               <span className="hobby-label">{hobby.title}</span>
             </article>
@@ -3258,7 +3292,7 @@ function Testimonials() {
                 className="testimonial-card"
                 style={{ animationDelay: `${(index % testimonials.length) * 0.08}s` }}
               >
-                <img src={item.image} alt={item.name} className="testimonial-avatar" />
+                <Image src={item.image} alt={item.name} className="testimonial-avatar" width={112} height={112} sizes="56px" />
                 <div>
                   <p className="testimonial-quote">
                     &quot;<HighlightedQuote quote={item.quote} highlight={item.highlight} />&quot;

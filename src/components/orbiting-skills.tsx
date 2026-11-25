@@ -290,7 +290,7 @@ const SkillNode = memo(
               fontSize: "0.68rem",
               whiteSpace: "nowrap",
               pointerEvents: "none",
-              fontFamily: '"JetBrains Mono", monospace',
+              fontFamily: "var(--font-mono), monospace",
               backdropFilter: "blur(8px)",
             }}
           >

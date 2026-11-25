@@ -123,7 +123,7 @@ function SkillDetailCard({ item, timelineData, onSelectRelated, popoverAbove = f
         <span
           style={{
             fontSize: "0.62rem",
-            fontFamily: '"JetBrains Mono", monospace',
+            fontFamily: "var(--font-mono), monospace",
             color: "rgba(255,255,255,0.5)",
             letterSpacing: "0.06em",
             whiteSpace: "nowrap",
@@ -170,7 +170,7 @@ function SkillDetailCard({ item, timelineData, onSelectRelated, popoverAbove = f
             <ZapIcon size={10} />
             Proficiency
           </span>
-          <span style={{ fontFamily: '"JetBrains Mono", monospace', color: "rgba(255,215,130,0.95)" }}>
+          <span style={{ fontFamily: "var(--font-mono), monospace", color: "rgba(255,215,130,0.95)" }}>
             {item.energy}%
           </span>
         </div>
@@ -229,7 +229,7 @@ function SkillDetailCard({ item, timelineData, onSelectRelated, popoverAbove = f
                     minHeight: "22px",
                     padding: "2px 8px",
                     fontSize: "0.62rem",
-                    fontFamily: '"JetBrains Mono", monospace',
+                    fontFamily: "var(--font-mono), monospace",
                     color: "rgba(255,255,255,0.85)",
                     background: "transparent",
                     border: "1px solid rgba(255,255,255,0.18)",
@@ -500,7 +500,7 @@ export default function RadialOrbitalTimeline({ timelineData, ringMeta = DEFAULT
                   fontSize: "0.58rem",
                   lineHeight: 1,
                   color: "rgba(255,255,255,0.62)",
-                  fontFamily: '"JetBrains Mono", monospace',
+                  fontFamily: "var(--font-mono), monospace",
                   fontWeight: 600,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
@@ -650,7 +650,7 @@ export default function RadialOrbitalTimeline({ timelineData, ringMeta = DEFAULT
                   transform: `translateX(-50%) translateY(${showLabel ? "0" : "4px"}) ${isExpanded ? "scale(1.08)" : "scale(1)"}`,
                   whiteSpace: "nowrap",
                   fontSize: "0.68rem",
-                  fontFamily: '"JetBrains Mono", monospace',
+                  fontFamily: "var(--font-mono), monospace",
                   fontWeight: 600,
                   letterSpacing: "0.08em",
                   color: isExpanded ? "#fff" : "rgba(255,255,255,0.74)",
