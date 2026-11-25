@@ -49,7 +49,7 @@ type EducationItem = {
 };
 
 type Publication = {
-  kind: "conference" | "thesis";
+  kind: "conference" | "thesis" | "chapter";
   title: string;
   authors: string;
   venue: string;
@@ -76,6 +76,8 @@ type Testimonial = {
 function cloudinaryResize(url: string, width: number) {
   return url.replace("/upload/f_auto,q_auto/", `/upload/f_auto,q_auto,c_limit,w_${width}/`);
 }
+
+const SCHOLAR_URL = "https://scholar.google.com/citations?user=tQTSPM0AAAAJ&hl=en";
 
 const typedPhrases = [
   "I'm Raqueed - Embedded Firmware Engineer",
@@ -621,6 +623,20 @@ const publications: Publication[] = [
       "Master's thesis expanding on the ransomware detection research for digital substations, covering attack modeling and CNN-based detection methods with broader experimental analysis.",
     keywords: ["ransomware", "AI", "CNN", "smart grid", "substation", "thesis"],
   },
+  {
+    kind: "chapter",
+    title: "Basics of 3D Printing for Fluid Devices",
+    authors: "S. R. B. Alvee",
+    venue: "Chapter 2 in Water Purification by 3D-Printing Devices (Wiley–Scrivener)",
+    location: "",
+    year: "In preparation",
+    citations: null,
+    doi: null,
+    funding: null,
+    abstract:
+      "Book chapter in preparation for Water Purification by 3D-Printing Devices, published by Wiley–Scrivener.",
+    keywords: ["3D printing", "fluid devices", "water purification"],
+  },
 ];
 
 const selfAuthorPattern = /(S\.?\s*R\.?\s*B\.?\s*Alvee|S\.?\s*R\.?\s*Bin\s+Alvee)/g;
@@ -644,19 +660,23 @@ function isFirstAuthor(publication: Publication) {
 }
 
 function buildBibtex(publication: Publication) {
-  const key = `alvee${publication.year}${publication.title.split(/\s+/)[0].toLowerCase().replace(/\W/g, "")}`;
-  const isThesis = publication.kind === "thesis";
+  const hasYear = /^\d{4}$/.test(publication.year);
+  const key = `alvee${hasYear ? publication.year : ""}${publication.title.split(/\s+/)[0].toLowerCase().replace(/\W/g, "")}`;
+  const entryType = { conference: "inproceedings", thesis: "mastersthesis", chapter: "incollection" }[publication.kind];
   const fields: [string, string][] = [
     ["author", publication.authors.split(", ").join(" and ")],
     ["title", publication.title],
-    isThesis ? ["school", "Texas A\\&M University-Kingsville"] : ["booktitle", publication.venue],
-    ["year", publication.year],
   ];
+
+  if (publication.kind === "thesis") fields.push(["school", "Texas A\\&M University-Kingsville"]);
+  else if (publication.kind === "chapter") {
+    fields.push(["booktitle", "Water Purification by 3D-Printing Devices"], ["publisher", "Wiley--Scrivener"], ["note", "Chapter 2, in preparation"]);
+  } else fields.push(["booktitle", publication.venue]);
+
+  if (hasYear) fields.push(["year", publication.year]);
   if (publication.doi) fields.push(["doi", publication.doi.replace("https://doi.org/", "")]);
 
-  return `@${isThesis ? "mastersthesis" : "inproceedings"}{${key},\n${fields
-    .map(([name, value]) => `  ${name} = {${value}},`)
-    .join("\n")}\n}`;
+  return `@${entryType}{${key},\n${fields.map(([name, value]) => `  ${name} = {${value}},`).join("\n")}\n}`;
 }
 
 // Every headline number is derived from the data above so they cannot drift apart.
@@ -1184,6 +1204,12 @@ function Hero({ totalCitations }: { totalCitations: number }) {
               <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
             </svg>
             GitHub
+          </a>
+          <a href={SCHOLAR_URL} target="_blank" rel="noreferrer" className="hero-social-badge" aria-label="Google Scholar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M5.242 13.769 0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/>
+            </svg>
+            Scholar
           </a>
         </div>
       </div>
@@ -3145,7 +3171,7 @@ function ResearchFocus() {
           </div>
           <span className="research-in-progress">
             <span className="badge-dot" />
-            In preparation: book chapter
+            Book chapter in preparation · Wiley–Scrivener
           </span>
         </div>
         <ul className="research-results">
@@ -3197,7 +3223,11 @@ function Publications({ totalCitations }: { totalCitations: number }) {
         </div>
       </div>
       <p className="publication-stats-note">
-        Citation counts per Google Scholar, {publicationStats.asOf}. First author on{" "}
+        Citation counts per{" "}
+        <a href={SCHOLAR_URL} target="_blank" rel="noreferrer" className="inline-link">
+          Google Scholar
+        </a>
+        , {publicationStats.asOf}. First author on{" "}
         {publicationStats.firstAuthor} of {publicationStats.papers} papers.
       </p>
       <div className="publication-list">
@@ -3219,7 +3249,11 @@ function Publications({ totalCitations }: { totalCitations: number }) {
                     <span className="publication-copy">
                       <span className="publication-badges">
                         <span className="publication-badge">
-                          {publication.kind === "thesis" ? "M.S. thesis" : "Conference paper"}
+                          {publication.kind === "thesis"
+                            ? "M.S. thesis"
+                            : publication.kind === "chapter"
+                              ? "Book chapter"
+                              : "Conference paper"}
                         </span>
                         {isFirstAuthor(publication) ? (
                           <span className="publication-badge is-first-author">First author</span>
@@ -3228,7 +3262,7 @@ function Publications({ totalCitations }: { totalCitations: number }) {
                       <span className="publication-title">{publication.title}</span>
                       <span className="publication-authors">{renderPublicationAuthors(publication.authors)}</span>
                       <span className="publication-meta">
-                        {publication.venue} | {publication.location} | {publication.year}
+                        {[publication.venue, publication.location, publication.year].filter(Boolean).join(" | ")}
                       </span>
                     </span>
                     <span className="publication-side">
@@ -3580,6 +3614,7 @@ export function PortfolioPage() {
             <a href="mailto:raqueed@outlook.com">raqueed@outlook.com</a>
             <a href="https://linkedin.com/in/raqueed" target="_blank" rel="noreferrer">LinkedIn</a>
             <a href="https://github.com/crispypasta12" target="_blank" rel="noreferrer">GitHub</a>
+            <a href={SCHOLAR_URL} target="_blank" rel="noreferrer">Google Scholar</a>
           </div>
         </div>
       </footer>

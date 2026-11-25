@@ -5144,7 +5144,8 @@ img {
 
 .footer-links {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 8px 20px;
   align-items: center;
 }
 
